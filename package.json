@@ -3,10 +3,23 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "node scripts/build-app.js",
+    "start:api": "node server/index.js",
     "prepare:data": "node scripts/prepare-data.js",
-    "test": "node --test"
+    "prepare:external": "python scripts/prepare-external.py",
+    "prepare:ai": "python scripts/prepare-behavior.py && node scripts/build-behavior.js",
+    "test": "node --test test/*.test.js",
+    "dev": "node scripts/run-app.js",
+    "start": "node scripts/run-app.js --production",
+    "install:frontend": "npm ci --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "test:frontend": "npm test --prefix frontend",
+    "check:frontend": "npm run typecheck --prefix frontend",
+    "build:legacy": "node scripts/build.js"
   },
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@pitchkit/data-providers": "0.6.0"
   }

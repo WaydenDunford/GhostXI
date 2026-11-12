@@ -171,7 +171,7 @@ export function mountDashboard(root, {
   };
 }
 
-function createSelector(container, id, label, emptyText, onChange, signal) {
+export function createSelector(container, id, label, emptyText, onChange, signal) {
   container.classList.add("gx-select");
   container.innerHTML = `
     <span class="gx-label" id="${id}-label">${label}</span>

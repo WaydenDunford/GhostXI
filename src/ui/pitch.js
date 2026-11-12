@@ -27,12 +27,19 @@ export function createPitch(canvas, match) {
     context.setTransform(scale, 0, 0, scale, offsetX, offsetY);
     drawField(context, length, width);
 
-    const { frame, ghostPosition, ghostId, highlightedId, modeledGhost, coverPoint } = scene;
+    const { frame, ghostPosition, ghostId, highlightedId, modeledGhost, coverPoint, trails = [] } = scene;
     if (!frame) return;
 
     if (coverPoint) drawCoverPoint(context, coverPoint);
+    for (const trail of trails) {
+      context.beginPath(); context.strokeStyle = trail.color ?? "#d8ff9b"; context.lineWidth = .35;
+      context.setLineDash(trail.simulated ? [1, .7] : []);
+      for (const [index, p] of trail.points.filter(Boolean).entries()) index ? context.lineTo(p.x, p.y) : context.moveTo(p.x, p.y);
+      context.stroke(); context.setLineDash([]);
+    }
 
     for (const [id, position] of Object.entries(frame.players)) {
+      if (!position) continue;
       const player = players.get(id);
       drawPlayer(context, position, TEAM_COLORS[player?.team] ?? "#d8e0ea", id === highlightedId);
     }
@@ -42,6 +49,7 @@ export function createPitch(canvas, match) {
       drawGhost(context, ghostPosition, modeledGhost ? "#d8ff9b" : (TEAM_COLORS[player?.team] ?? "#d8e0ea"));
     }
 
+    if (!frame.ball) return;
     circle(context, frame.ball.x, frame.ball.y, 0.57);
     context.fillStyle = "#fff";
     context.fill();

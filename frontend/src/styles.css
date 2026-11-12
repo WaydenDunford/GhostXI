@@ -1,0 +1,199 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Barlow Condensed", "Barlow", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-pitch: var(--pitch);
+  --color-pitch-stripe: var(--pitch-stripe);
+  --color-pitch-line: var(--pitch-line);
+  --color-wood: var(--wood);
+  --color-wood-line: var(--wood-line);
+  --color-ice: var(--ice);
+  --color-ice-line: var(--ice-line);
+  --color-hcourt: var(--hcourt);
+  --color-hcourt-line: var(--hcourt-line);
+  --color-vcourt: var(--vcourt);
+  --color-vcourt-line: var(--vcourt-line);
+  --color-home: var(--home);
+  --color-away: var(--away);
+  --color-ghost: var(--ghost);
+  --color-observed: var(--observed);
+  --color-estimated: var(--estimated);
+  --color-simulated: var(--simulated);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-panel: var(--panel);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Dark is the default theme; .light overrides. */
+:root {
+  --radius: 0.6rem;
+  --background: oklch(0.16 0.025 255);
+  --foreground: oklch(0.95 0.01 250);
+  --card: oklch(0.205 0.028 255);
+  --card-foreground: oklch(0.95 0.01 250);
+  --panel: oklch(0.185 0.026 255);
+  --popover: oklch(0.22 0.03 255);
+  --popover-foreground: oklch(0.95 0.01 250);
+  --primary: oklch(0.8 0.17 150);
+  --primary-foreground: oklch(0.16 0.03 255);
+  --secondary: oklch(0.26 0.03 255);
+  --secondary-foreground: oklch(0.92 0.01 250);
+  --muted: oklch(0.25 0.028 255);
+  --muted-foreground: oklch(0.68 0.025 250);
+  --accent: oklch(0.78 0.13 215);
+  --accent-foreground: oklch(0.16 0.03 255);
+  --destructive: oklch(0.65 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --success: oklch(0.8 0.17 150);
+  --warning: oklch(0.8 0.15 75);
+  --border: oklch(0.3 0.03 255);
+  --input: oklch(0.3 0.03 255);
+  --ring: oklch(0.78 0.13 215);
+  --chart-1: oklch(0.8 0.17 150);
+  --chart-2: oklch(0.78 0.13 215);
+  --chart-3: oklch(0.65 0.2 25);
+  --chart-4: oklch(0.8 0.15 75);
+  --chart-5: oklch(0.7 0.12 280);
+  --pitch: oklch(0.36 0.07 150);
+  --pitch-stripe: oklch(0.39 0.075 150);
+  --pitch-line: oklch(0.92 0.02 150 / 0.7);
+  --wood: oklch(0.5 0.09 65);
+  --wood-line: oklch(0.95 0.02 90 / 0.85);
+  --ice: oklch(0.87 0.025 230);
+  --ice-line: oklch(0.45 0.12 250 / 0.8);
+  --hcourt: oklch(0.4 0.07 240);
+  --hcourt-line: oklch(0.92 0.02 240 / 0.8);
+  --vcourt: oklch(0.43 0.09 200);
+  --vcourt-line: oklch(0.93 0.02 200 / 0.8);
+  --home: oklch(0.62 0.17 255);
+  --away: oklch(0.68 0.19 30);
+  --ghost: oklch(0.85 0.15 195);
+  --observed: oklch(0.8 0.17 150);
+  --estimated: oklch(0.8 0.15 75);
+  --simulated: oklch(0.78 0.13 215);
+  --sidebar: oklch(0.14 0.024 255);
+  --sidebar-foreground: oklch(0.85 0.015 250);
+  --sidebar-primary: oklch(0.8 0.17 150);
+  --sidebar-primary-foreground: oklch(0.16 0.03 255);
+  --sidebar-accent: oklch(0.22 0.03 255);
+  --sidebar-accent-foreground: oklch(0.97 0.01 250);
+  --sidebar-border: oklch(0.26 0.03 255);
+  --sidebar-ring: oklch(0.78 0.13 215);
+  --gradient-hero: radial-gradient(ellipse at top left, oklch(0.8 0.17 150 / 0.12), transparent 60%), radial-gradient(ellipse at bottom right, oklch(0.78 0.13 215 / 0.12), transparent 60%);
+  --gradient-stadium: radial-gradient(ellipse at center, oklch(0.24 0.04 220) 0%, oklch(0.13 0.02 255) 75%);
+  --shadow-glow: 0 0 24px -4px oklch(0.85 0.15 195 / 0.6);
+  --shadow-panel: 0 10px 30px -15px oklch(0 0 0 / 0.6);
+}
+
+.light {
+  --background: oklch(0.97 0.005 250);
+  --foreground: oklch(0.2 0.03 255);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.03 255);
+  --panel: oklch(0.985 0.004 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.03 255);
+  --primary: oklch(0.55 0.15 150);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.93 0.01 250);
+  --secondary-foreground: oklch(0.2 0.03 255);
+  --muted: oklch(0.94 0.01 250);
+  --muted-foreground: oklch(0.48 0.03 255);
+  --accent: oklch(0.55 0.13 225);
+  --accent-foreground: oklch(0.99 0 0);
+  --border: oklch(0.88 0.01 250);
+  --input: oklch(0.88 0.01 250);
+  --sidebar: oklch(0.99 0.003 250);
+  --sidebar-foreground: oklch(0.3 0.03 255);
+  --sidebar-accent: oklch(0.93 0.01 250);
+  --sidebar-accent-foreground: oklch(0.2 0.03 255);
+  --sidebar-border: oklch(0.9 0.01 250);
+  --gradient-stadium: radial-gradient(ellipse at center, oklch(0.9 0.02 220) 0%, oklch(0.82 0.02 250) 80%);
+  --wood: oklch(0.74 0.1 78);
+  --wood-line: oklch(0.35 0.05 60 / 0.7);
+  --ice: oklch(0.96 0.015 230);
+  --ice-line: oklch(0.5 0.12 250 / 0.75);
+  --hcourt: oklch(0.62 0.08 240);
+  --hcourt-line: oklch(0.97 0.01 240 / 0.85);
+  --vcourt: oklch(0.64 0.1 200);
+  --vcourt-line: oklch(0.97 0.01 200 / 0.85);
+}
+
+@utility font-display { font-family: var(--font-display); }
+@utility bg-hero { background-image: var(--gradient-hero); }
+@utility bg-stadium { background-image: var(--gradient-stadium); }
+@utility shadow-glow { box-shadow: var(--shadow-glow); }
+@utility shadow-panel { box-shadow: var(--shadow-panel); }
+
+@keyframes live-pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+@utility animate-live { animation: live-pulse 1.4s ease-in-out infinite; }
+@keyframes ghost-ring { 0% { r: 1.6; opacity: .9 } 100% { r: 3.6; opacity: 0 } }
+@utility ghost-ring { animation: ghost-ring 1.8s ease-out infinite; }
+
+@layer base {
+  * { border-color: var(--color-border); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  .tabular { font-variant-numeric: tabular-nums; }
+}
+
+/* Stadium: stands ring + floodlight glow around the pitch */
+@utility bg-stands {
+  background-image:
+    radial-gradient(circle at 8% 0%, oklch(0.95 0.03 220 / 0.18), transparent 28%),
+    radial-gradient(circle at 92% 0%, oklch(0.95 0.03 220 / 0.18), transparent 28%),
+    radial-gradient(circle at 8% 100%, oklch(0.95 0.03 220 / 0.08), transparent 25%),
+    radial-gradient(circle at 92% 100%, oklch(0.95 0.03 220 / 0.08), transparent 25%),
+    repeating-radial-gradient(circle at 50% 50%, oklch(1 0 0 / 0.025) 0 1px, transparent 1px 4px),
+    linear-gradient(180deg, oklch(0.2 0.03 250), oklch(0.12 0.02 255));
+}
+@utility stand-ring {
+  box-shadow: 0 0 0 10px oklch(0.19 0.025 250), 0 0 0 11px oklch(0.3 0.03 250 / 0.6), 0 0 0 26px oklch(0.16 0.022 252), 0 30px 60px -20px oklch(0 0 0 / 0.8);
+}
+@utility text-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-foreground); }

@@ -114,7 +114,7 @@ function prepareMoment(scenario, rawFrames) {
   const initial = frames[0].players[targetPlayerId];
   const prior = metres(priorPlayer);
   return {
-    id, title, description, context, targetPlayerId, candidatePlayerIds, startTime, startClock: clock(startTime),
+    id, title, description, context, period: 1, targetPlayerId, candidatePlayerIds, startTime, startClock: clock(startTime),
     durationSec: frames.at(-1).time, frames, anchor, ballLead,
     initialVelocity: { x: (initial.x - prior.x) / priorInterval, y: (initial.y - prior.y) / priorInterval },
     action: { startFrame: start.frame, endFrame: end.frame, team: start.team.toUpperCase(), phases },
@@ -137,6 +137,9 @@ const recorded = {
   matchEndSeconds: Math.max(...events.map((event) => event["Start Time [s]"])),
   events: events.filter((event) => (event.Type === "PASS" || event.Type === "SHOT") && event.x !== undefined)
     .map((event) => ({
+      id: `metrica:1:${event["Start Frame"]}:${event.Team}:${event.Type}`,
+      type: event.Type, playerId: event.From ?? null, recipientId: event.To ?? null,
+      sourceFrame: event["Start Frame"], endFrame: event["End Frame"],
       team: event.Team.toUpperCase(),
       period: event.Period,
       time: event["Start Time [s]"],

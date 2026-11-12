@@ -87,6 +87,12 @@
 }
 
 .ghostxi .gx-select { position: relative; min-width: 0; }
+.gx-verified > .gx-panel, .gx-verified > .gx-status { max-width: 1240px; margin: 12px auto; padding: 16px; }
+.gx-verified .gx-workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.gx-verified .gx-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+.gx-verified .gx-controls > .gx-select { flex: 1; min-width: 160px; }
+.gx-verified .gx-coach { display: grid; gap: 8px; }
+@media (max-width: 760px) { .gx-verified .gx-workspace { grid-template-columns: 1fr; } }
 .ghostxi .gx-label {
   display: block;
   margin-bottom: 5px;
@@ -306,3 +312,8 @@
   .ghostxi .gx-transport { grid-template-columns: auto auto minmax(0, 1fr); }
   .ghostxi .gx-time { grid-column: 1 / -1; text-align: left; }
 }
+
+.ghostxi.gx-verified .gx-workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.ghostxi.gx-verified .gx-pitch { aspect-ratio: 113 / 76; }
+.ghostxi.gx-verified canvas { width: 100%; height: 100%; max-height: none; aspect-ratio: auto; }
+@media (max-width: 760px) { .ghostxi.gx-verified .gx-workspace { grid-template-columns: minmax(0, 1fr); } }

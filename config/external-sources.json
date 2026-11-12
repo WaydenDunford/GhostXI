@@ -1,0 +1,29 @@
+{
+  "hackathonDocument": "https://adriatecharena.com/sports-analytics-hackathon/open-datasets.pdf",
+  "statsbomb": {
+    "repository": "https://github.com/hudl/open-data",
+    "revision": "4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+    "matches": [
+      { "id": 3869685, "competitionId": 43, "seasonId": 106 },
+      { "id": 3943043, "competitionId": 55, "seasonId": 282 },
+      { "id": 3906390, "competitionId": 72, "seasonId": 107 },
+      { "id": 4020846, "competitionId": 53, "seasonId": 315 }
+    ]
+  },
+  "transfermarkt": {
+    "repository": "https://github.com/dcaribou/transfermarkt-datasets",
+    "documentationRevision": "e44f186d6f06dd8452aaf54c7921ba66c961f637",
+    "primaryDownload": "https://pub-e682421888d945d684bcae8890b0ec20.r2.dev/data/transfermarkt-datasets.zip",
+    "mirror": "https://www.kaggle.com/datasets/davidcariboo/player-scores",
+    "kaggleVersion": 679,
+    "declaredCoverageEnd": "2026-07-06"
+  },
+  "playerLinks": [
+    { "statsbombId": 5503, "statsbombName": "Lionel Andrés Messi Cuccittini", "transfermarktId": "28003", "transfermarktName": "Lionel Messi", "country": "Argentina", "dateOfBirth": "1987-06-24" },
+    { "statsbombId": 3009, "statsbombName": "Kylian Mbappé Lottin", "transfermarktId": "342229", "transfermarktName": "Kylian Mbappé", "country": "France", "dateOfBirth": "1998-12-20" },
+    { "statsbombId": 22084, "statsbombName": "Bukayo Saka", "transfermarktId": "433177", "transfermarktName": "Bukayo Saka", "country": "England", "dateOfBirth": "2001-09-05" },
+    { "statsbombId": 30714, "statsbombName": "Jude Bellingham", "transfermarktId": "581678", "transfermarktName": "Jude Bellingham", "country": "England", "dateOfBirth": "2003-06-29" },
+    { "statsbombId": 39461, "statsbombName": "Cole Palmer", "transfermarktId": "568177", "transfermarktName": "Cole Palmer", "country": "England", "dateOfBirth": "2002-05-06" },
+    { "statsbombId": 316046, "statsbombName": "Lamine Yamal Nasraoui Ebana", "transfermarktId": "937958", "transfermarktName": "Lamine Yamal", "country": "Spain", "dateOfBirth": "2007-07-13" }
+  ]
+}
