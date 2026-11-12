@@ -31,6 +31,8 @@ for (const signal of ['SIGINT','SIGTERM']) process.once(signal,()=>stop());
 if (!await ready()) {
   launch(['server/index.js'],root,{
     HOST:'127.0.0.1',PORT:String(apiPort),
+    // Keyless club uploads are safe here only because this launcher binds both servers to 127.0.0.1.
+    GHOSTXI_ALLOW_LOCAL_UPLOADS: process.env.GHOSTXI_ALLOW_LOCAL_UPLOADS ?? '1',
     CORS_ORIGINS: process.env.CORS_ORIGINS ?? [
       `http://127.0.0.1:${frontendPort}`, `http://localhost:${frontendPort}`,
       `http://127.0.0.1:${apiPort}`, `http://localhost:${apiPort}`,

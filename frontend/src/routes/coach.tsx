@@ -12,6 +12,8 @@ import {
   VerdictBadge,
 } from "@/components/ghost/ui";
 import { cn } from "@/lib/utils";
+import { SimulationCoaching } from "@/components/ghost/simulation-coaching";
+import { EventCoaching } from "@/components/ghost/event-coaching";
 
 export const Route = createFileRoute("/coach")({
   head: () => ({
@@ -48,6 +50,9 @@ const prio: Record<string, string> = {
 
 function Coach() {
   const { sport } = useSport();
+  const { sourceMode } = useBackend();
+  if (sport === "football" && sourceMode === "tracking") return <SimulationCoaching variant="coach" />;
+  if (sport === "football" && sourceMode === "events") return <EventCoaching />;
   return <CoachView />;
 }
 

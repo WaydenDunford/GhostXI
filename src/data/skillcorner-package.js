@@ -1,7 +1,6 @@
 import { createReadStream } from "node:fs";
 import { readFile, stat } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { createInterface } from "node:readline";
 import { requireValue } from "../domain/validation.js";
 import { normalizeSkillCorner } from "./skillcorner.js";
 
@@ -12,8 +11,14 @@ import { normalizeSkillCorner } from "./skillcorner.js";
  * nothing is interpolated, renamed or invented.
  */
 
+// Real packages: ~2–3 KB per tracking line, ~70k frames, ~10k event rows. These caps
+// bound memory for malformed or hostile files instead of buffering them whole.
+const MAX_LINE_BYTES = 1024 * 1024;
+const MAX_FRAMES = 250_000;
+const MAX_EVENT_ROWS = 150_000;
+
 /** RFC 4180 CSV: quoted fields, doubled quotes, CRLF. Rows become objects keyed by the header. */
-export function parseCsv(text) {
+export function parseCsv(text, { maxRows = MAX_EVENT_ROWS } = {}) {
   const rows = [];
   let row = [], field = "", quoted = false;
   for (let i = 0; i < text.length; i++) {
@@ -24,7 +29,10 @@ export function parseCsv(text) {
       else quoted = false;
     } else if (c === '"') quoted = true;
     else if (c === ",") { row.push(field); field = ""; }
-    else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+    else if (c === "\n") {
+      row.push(field); rows.push(row); row = []; field = "";
+      requireValue(rows.length <= maxRows + 1, `The events file has more than ${maxRows} rows.`);
+    }
     else if (c !== "\r") field += c;
   }
   if (field !== "" || row.length) { row.push(field); rows.push(row); }
@@ -32,6 +40,24 @@ export function parseCsv(text) {
   requireValue(header && header.length > 1, "The events file needs a CSV header row.");
   return body.filter((r) => r.length > 1 || r[0] !== "")
     .map((r) => Object.fromEntries(header.map((key, i) => [key, r[i] ?? ""])));
+}
+
+/** Yields JSON Lines text; refuses any line over MAX_LINE_BYTES before buffering more of it. */
+export async function* readJsonLines(path, maxLineBytes = MAX_LINE_BYTES) {
+  const tooLong = `A tracking line is longer than ${Math.round(maxLineBytes / 1024)} KB; expected one frame per line.`;
+  let carry = Buffer.alloc(0);
+  for await (const chunk of createReadStream(path)) {
+    const data = carry.length ? Buffer.concat([carry, chunk]) : chunk;
+    let start = 0, newline;
+    while ((newline = data.indexOf(10, start)) !== -1) {
+      requireValue(newline - start <= maxLineBytes, tooLong);
+      yield data.toString("utf8", start, newline);
+      start = newline + 1;
+    }
+    carry = data.subarray(start);
+    requireValue(carry.length <= maxLineBytes, tooLong);
+  }
+  if (carry.length) yield carry.toString("utf8");
 }
 
 async function fileSource(path, name) {
@@ -91,13 +117,13 @@ export async function buildSkillCornerClips({ metadataPath, eventsPath, tracking
 
   let active = [], lines = 0, missingPeriodFrames = 0;
   const eligible = [];
-  const reader = createInterface({ input: createReadStream(trackingPath, { encoding: "utf8" }), crlfDelay: Infinity });
-  for await (const line of reader) {
+  for await (const line of readJsonLines(trackingPath)) {
     if (!line.trim()) continue;
     let frame;
     try { frame = JSON.parse(line); }
     catch { requireValue(false, `Tracking line ${lines + 1} is not valid JSON; expected SkillCorner JSON Lines.`); }
     lines++;
+    requireValue(lines <= MAX_FRAMES, `The tracking file has more than ${MAX_FRAMES} frames.`);
     const row = byStart.get(frame.frame);
     if (row) active.push({ event: row, frames: [] });
     const next = [];

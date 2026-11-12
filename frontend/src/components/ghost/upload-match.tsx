@@ -31,9 +31,13 @@ async function send<T>(url: string, init: RequestInit): Promise<T> {
   const response = await fetch(url, init);
   const body = (await response.json().catch(() => null)) as {
     data?: T;
-    error?: { message?: string };
+    error?: { code?: string; message?: string };
   } | null;
-  if (!response.ok) throw new Error(body?.error?.message ?? `Upload failed (${response.status}).`);
+  if (!response.ok) {
+    throw Object.assign(new Error(body?.error?.message ?? `Upload failed (${response.status}).`), {
+      code: body?.error?.code,
+    });
+  }
   return body!.data as T;
 }
 
@@ -44,7 +48,11 @@ export function UploadMatch() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const ready = PARTS.every((p) => files[p.key]);
+  // Only shown once the server answers that it requires a key (non-local deployments).
+  const [needsKey, setNeedsKey] = useState(false);
+  const [key, setKey] = useState("");
+  const ready = PARTS.every((p) => files[p.key]) && (!needsKey || key.length > 0);
+  const auth: Record<string, string> = key ? { Authorization: `Bearer ${key}` } : {};
 
   const importMatch = async () => {
     setBusy(true);
@@ -55,14 +63,14 @@ export function UploadMatch() {
         setStatus(`Uploading ${part.label.toLowerCase()}…`);
         await send(`${uploadBase()}/${id}/${part.key}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/octet-stream" },
+          headers: { "Content-Type": "application/octet-stream", ...auth },
           body: files[part.key]!,
         });
       }
       setStatus("Validating every frame and building replay windows…");
       const match = await send<{ id: string; name: string; date: string; windows: number }>(
         `${uploadBase()}/${id}/import`,
-        { method: "POST" },
+        { method: "POST", headers: auth },
       );
       await queryClient.invalidateQueries({ queryKey: ["ghostxi"] });
       if (b.sourceMode !== "tracking") b.setSourceMode("tracking");
@@ -74,6 +82,7 @@ export function UploadMatch() {
       toast.success(done);
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
+      if ((e as { code?: string }).code === "UPLOAD_KEY_REQUIRED") setNeedsKey(true);
       setStatus("");
       setError(message);
       toast.error(message);
@@ -118,6 +127,22 @@ export function UploadMatch() {
               />
             </div>
           ))}
+          {needsKey && (
+            <div>
+              <label className="text-eyebrow" htmlFor="upload-key">
+                Upload key · from your GhostXI administrator
+              </label>
+              <Input
+                id="upload-key"
+                type="password"
+                autoComplete="off"
+                value={key}
+                disabled={busy}
+                className="mt-1 text-xs"
+                onChange={(e) => setKey(e.target.value)}
+              />
+            </div>
+          )}
         </div>
         {(status || error) && (
           <p role="status" className={error ? "text-xs text-destructive" : "text-xs text-muted-foreground"}>

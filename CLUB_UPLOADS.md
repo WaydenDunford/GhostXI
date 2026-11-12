@@ -32,6 +32,28 @@ presented as public data. GhostXI checks hashes, identities and coordinates, but
 cannot verify the club's licence. The data stays on the server that received it and
 is never committed or redistributed.
 
+## Access and limits
+
+- **Who can upload:** uploads need a key. Set `GHOSTXI_UPLOAD_TOKEN` and every upload
+  request must send `Authorization: Bearer <token>`. The dialog asks for an "Upload
+  key" when the server requires one. Without a key, uploads are disabled.
+- **Local demo exception:** `npm run dev` / `npm start` set
+  `GHOSTXI_ALLOW_LOCAL_UPLOADS=1`. That is safe only because `scripts/run-app.js` binds
+  both the API and the frontend proxy to `127.0.0.1`. Even then, a request passes only
+  if it is direct and same-machine: loopback client address and `Host`, and no
+  `Forwarded`/`X-Forwarded-*` from elsewhere. Anything else needs the key. If you run
+  the servers some other way, or expose them, use a key.
+- **Disk:** at most 3 packages can be staged at once. A slot is reserved atomically,
+  so simultaneous requests cannot exceed the cap. Abandoned staging folders are
+  deleted after 30 minutes. Size caps: match 5 MB, events 25 MB, tracking 300 MB.
+- **Memory:** tracking is read line by line, and a line over 1 MB is rejected before
+  it is buffered. A file may hold at most 250,000 frames and 150,000 event rows. One
+  import runs at a time.
+- **Not yet:** a single shared key means a single uploader identity. Several clubs
+  sharing one server would need per-club accounts and ownership of uploaded
+  matches. Today any key holder can replace an earlier upload of the same match,
+  but never the open data.
+
 ## API
 
 ```text
@@ -42,6 +64,18 @@ POST /api/v1/uploads/<upload-id>/import     → { id, name, date, competition, s
 ```
 
 `<upload-id>` is 8–64 lowercase letters, digits or hyphens; the frontend uses a UUID.
+
+## Demo package
+
+To demonstrate an upload without club data, use a SkillCorner Open Data match that
+is not in `config/skillcorner-sources.json`. Western United vs Sydney FC, 2025-04-27
+(MIT licence, revision `4340d274572876239c154c90bc507a9b3250a656`):
+
+```text
+https://raw.githubusercontent.com/SkillCorner/opendata/4340d274572876239c154c90bc507a9b3250a656/data/matches/2013725/2013725_match.json
+https://raw.githubusercontent.com/SkillCorner/opendata/4340d274572876239c154c90bc507a9b3250a656/data/matches/2013725/2013725_dynamic_events.csv
+https://media.githubusercontent.com/media/SkillCorner/opendata/4340d274572876239c154c90bc507a9b3250a656/data/matches/2013725/2013725_tracking_extrapolated.jsonl
+```
 
 ## Not yet supported
 

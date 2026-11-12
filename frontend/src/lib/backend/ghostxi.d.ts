@@ -173,6 +173,7 @@ export interface RequestOptions {
   signal?: AbortSignal;
 }
 export interface GhostXIClient {
+  getCoachingReport(query: { matchId: string; scenarioId?: string }, options?: RequestOptions): Promise<CoachingReport>;
   getDatasetStatus(options?: RequestOptions): Promise<DatasetRegistry>;
   getReplayMatches(options?: RequestOptions): Promise<ReplayMatch[]>;
   getReplayMatch(
@@ -919,3 +920,32 @@ export function createGhostXIClient(options?: {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
 }): GhostXIClient;
+
+export type CoachingVerdict = "replace" | "keep" | "inconclusive";
+export interface CoachingMetric {
+  id: string; label: string; original: number | null; alternative: number | null; delta: number | null; unit: string;
+}
+export interface CoachingBranch {
+  kind: "individual" | "combined";
+  replacements: { originalPlayerId: string; originalPlayerName: string; candidatePlayerId: string; candidateName: string }[];
+  verdict: CoachingVerdict; reason: string; reasons: string[];
+  originalValue: number | null; alternativeValue: number | null; delta: number | null;
+  metrics: CoachingMetric[];
+}
+export interface CoachingReport {
+  matchId: string; scenarioId: string | null; momentId: string | null;
+  originalPlayerId: string | null; originalPlayerName: string; windowSeconds: number | null;
+  verdict: CoachingVerdict; headline: string; summary: string; reasons: string[]; actions: string[];
+  alternatives: { candidateId: string; candidateName: string; verdict: CoachingVerdict;
+    originalValue: number | null; alternativeValue: number | null; delta: number | null;
+    metrics: CoachingMetric[]; reason: string; branches?: CoachingBranch[];
+    availability?: "match-bench" | "reference-player"; teamName?: string | null }[];
+  preferredCandidateId: string | null; evidenceNote: string; comparisonsTied: boolean;
+  branches?: CoachingBranch[];
+  context: { match: ReplayMatch; momentTitle: string; period: number; startPeriodTimeSec: number;
+    endPeriodTimeSec: number; analysisOrigin: "saved" | "automatic"; comparedCount: number };
+  scenario: SavedSimulationScenario;
+  simulation: Omit<VerifiedSimulationResult, "originalFrames" | "alternativeFrames" | "branches"> & {
+    branches: Omit<GhostBranch, "frames">[];
+  };
+}

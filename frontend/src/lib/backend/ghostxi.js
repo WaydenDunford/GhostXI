@@ -94,6 +94,7 @@ export function createGhostXIClient({
       request(`/scenarios/${segment(id)}/simulate`, { ...options, body: {} }, substitutionBase),
     getSavedScenarioFindings: (id, options) =>
       request(`/scenarios/${segment(id)}/findings`, options, substitutionBase),
+    getCoachingReport: (query, options) => request(`/coach${queryString(query)}`, options, substitutionBase),
     getCandidateAssessment: (query, options) =>
       request(`/scouting${queryString(query)}`, options, substitutionBase),
     getMatch: (matchId, options) => request(`/matches/${segment(matchId)}`, options),
