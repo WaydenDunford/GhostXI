@@ -3,6 +3,8 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+/* Tailwind v4 has no built-in fullscreen variant; without this every `fullscreen:` class was ignored. */
+@custom-variant fullscreen (&:fullscreen);
 
 @theme inline {
   --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;

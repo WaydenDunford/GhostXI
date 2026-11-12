@@ -534,7 +534,7 @@ function ConnectedLab() {
         <div className="order-1 min-w-0 space-y-4 xl:order-2">
           <div
             ref={field}
-            className="flex flex-col overflow-hidden rounded-xl border bg-stands shadow-panel fullscreen:rounded-none fullscreen:border-0"
+            className="flex flex-col overflow-hidden rounded-xl border bg-stands shadow-panel fullscreen:h-screen fullscreen:w-screen fullscreen:rounded-none fullscreen:border-0"
           >
             <div className="flex items-center justify-between px-5 pt-4 text-xs">
               <span className="text-eyebrow">
@@ -555,9 +555,10 @@ function ConnectedLab() {
                 </Button>
               </div>
             </div>
-            <div className="flex flex-1 flex-col justify-center px-6 py-6 md:px-8">
+            {/* In fullscreen the pitch fits the remaining screen height, so the controls stay visible. */}
+            <div className="flex flex-1 flex-col justify-center px-6 py-6 md:px-8 [:fullscreen_&]:min-h-0 [:fullscreen_&]:py-3 [:fullscreen_&_.stand-ring]:mx-auto [:fullscreen_&_.stand-ring]:max-h-[calc(100vh-10rem)] [:fullscreen_&_.stand-ring]:w-auto [:fullscreen_&_.stand-ring]:max-w-full">
               {view === "split" ? (
-                <div className="grid gap-6 2xl:grid-cols-2 fullscreen:grid-cols-2">
+                <div className="grid gap-6 2xl:grid-cols-2 [:fullscreen_&]:grid-cols-2">
                   <div>
                     <p className="mb-2 font-mono text-xs uppercase tracking-widest text-warning">
                       Original · {selected?.name}
@@ -643,10 +644,10 @@ function ConnectedLab() {
               <Button
                 size="icon"
                 variant="secondary"
-                aria-label="Toggle fullscreen"
+                aria-label={isFull ? "Exit fullscreen" : "Toggle fullscreen"}
                 onClick={toggleFullscreen}
               >
-                <Maximize />
+                {isFull ? <Minimize /> : <Maximize />}
               </Button>
               <ToggleGroup
                 type="single"
