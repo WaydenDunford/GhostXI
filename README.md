@@ -1,6 +1,14 @@
 # GhostXI
 
-GhostXI compares a recorded football scenario with a modeled player replacement. The vertical slice uses Metrica Sample Game 1, from 00:10.04 to 00:18.04. Home 2 intercepts Away's pass at 00:15.12. The original 22 players and ball remain visible while the modeled replacement appears as a translucent ghost.
+GhostXI compares recorded football scenarios with modeled player replacements. All three eight-second clips come from Metrica Sample Game 1. The original 22 players and ball remain visible while the modeled replacement appears as a translucent ghost.
+
+| Scenario | Match clock | Recorded player under review | Modeled profiles |
+| --- | --- | --- | --- |
+| Transition | 00:10.04–00:18.04 | Home 2 intercepts an infield pass at 00:15.12. | Lane reader, Patient cover |
+| Press | 03:41.20–03:49.20 | Home 1 wins the tackle at 03:45.08. | Patient cover, Lane reader |
+| Attack | 06:17.28–06:25.28 | Home 8 receives a deep pass and shoots at 06:25.12. | Wide runner, Lane reader |
+
+Lane reader is a modeled 19-year-old central midfielder, Patient cover a 22-year-old full-back, and Wide runner a 20-year-old winger. Ages and trait ratings describe only the hypothetical replacements. The recorded players are anonymized by Metrica.
 
 ## Run the demo
 
@@ -12,9 +20,9 @@ npm run prepare:data
 python -m http.server 8764 --bind 127.0.0.1
 ```
 
-Open [GhostXI locally](http://127.0.0.1:8764/). Select a replacement profile, click **Compare players**, then click **Play** or scrub past 4 seconds. The dotted player is the modeled replacement and the cross marks the assigned cover point. **Hide comparison** restores the original view. Run `npm test` after preparing the data to verify reproducibility, baseline preservation and the analytics.
+Open [GhostXI locally](http://127.0.0.1:8764/). Select a match situation and replacement profile, click **Compare players**, then click **Play** or scrub through the clip. The dotted player is the modeled replacement and the cross marks the assigned tactical point. **Hide comparison** restores the original view. Run `npm test` after preparing the data to verify reproducibility, baseline preservation and the analytics.
 
-The preparation step downloads the event file and a short tracking window from a pinned Metrica revision. The prepared JSON stays in the local checkout. Playback makes local requests for the prepared JSON and the vendored EPV grid.
+The preparation step downloads the event file and three tracking windows from a pinned Metrica revision. Run `npm run prepare:data` again if you have the earlier one-clip cache. The prepared JSON stays in the local checkout. Playback makes local requests for the prepared JSON and the vendored EPV grid.
 
 ## Reuse decisions
 
@@ -28,8 +36,8 @@ The preparation step downloads the event file and a short tracking window from a
 
 ## Model and evidence
 
-- **Recorded replay.** The original branch uses Metrica's 25 Hz tracking coordinates, with the source frame number retained. Both branches use the same ball and other 21 player positions. Home 2's recorded interception remains a fact in both views.
-- **Modeled replacement.** Each hypothetical profile starts at Home 2's recorded position and estimated velocity. It approaches an assigned cover point at (29 m, 54.5 m), then reacts after its configured delay. While the pass is in flight, it projects the ball 0.24 seconds ahead using the two latest samples and limits its step away from cover. Speed and acceleration are bounded by the profile. There is no random sampling or simulation of a new ball path.
-- **Comparison.** Positioning is mean distance to the cover point. Interception reach is the share of in-flight frames within 1.6 m of the ball. The sample at the recorded recovery is excluded from both branches. Reachable possession value is the maximum Away ball-location EPV discounted linearly to zero over 4 m. It is a geometric proxy for the threat within reach, with no estimate of ball height, successful control or goals.
+- **Recorded replay.** The original branch uses Metrica's 25 Hz tracking coordinates, with the source frame number retained. Both branches use the same ball and other 21 player positions. Each clip keeps its recorded outcome visible.
+- **Modeled replacement.** Each profile starts at the recorded player's position and estimated velocity. In transition and press it approaches a fixed point. In attack it follows a support point six metres ahead of the recorded ball, capped at x = 98 m on y = 25 m. After the scenario cue and reaction delay, it steers toward a 0.24 s ball projection using the two latest samples, with a profile-specific limit on how far it can steer away from the tactical point. Pace determines target top speed. Acceleration, reaction time and step-out distance are modeled separately.
+- **Comparison.** Positioning is mean distance to the assigned tactical point. Reach is the share of frames from the cue up to the recorded recovery, tackle or shot in which the player is within 1.6 m of the ball. Reachable possession value is the maximum ball-location EPV for the team in possession, discounted linearly to zero over 4 m. It measures access to a location, without modeling ball height or successful control.
 - **Momentum.** The chart sums the location EPV of recorded completed-pass destinations and shot origins by team in one-minute bins, takes Home minus Away over trailing three-minute windows, and scales by the largest absolute window. It uses the recorded event stream across the match. The marker identifies the replay start.
-- **Coaching and scouting.** Recommendations cite the measured approach distance and reach. The Home wide-cover fit awards up to 40 points for cover distance, 40 for proximity to the pass, and 20 for reachable EPV relative to peak EPV in the pass. Full losses in the first two components occur at 12 m mean cover error and 6 m closest approach, respectively. Scores describe this assigned role and clip. Confidence is low because both replacement profiles are hypothetical and there is no measured candidate history.
+- **Coaching and scouting.** Recommendations cite the measured approach distance and reach. Role fit awards up to 40 points for positioning, 40 for proximity to the ball, and 20 for reachable EPV relative to peak EPV during the action. The first two components fall to zero at 12 m mean positioning error and 6 m closest approach, respectively. Scores describe the assigned role in the selected clip. Confidence is low because the replacement profiles are hypothetical.

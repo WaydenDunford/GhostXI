@@ -15,13 +15,13 @@ try {
     load("./data/metrica-game1.json").then((response) => response.json()),
     load("./data/fot/EPV_grid.csv").then((response) => response.text()),
   ]);
+  if (!recording.moments.every(({ action }) => action)) {
+    throw new Error("The local Metrica cache needs to be refreshed for the expanded scenarios.");
+  }
   const possessionValue = createPossessionValue(grid, recording.pitch);
   const match = {
     ...recording,
     players: [...recording.players, ...replacementProfiles],
-    moments: recording.moments.map((moment) => ({
-      ...moment, candidatePlayerIds: replacementProfiles.map(({ id }) => id),
-    })),
     momentum: buildMomentum(recording, possessionValue),
   };
   root.replaceChildren();
@@ -112,12 +112,11 @@ function startDashboard(match, possessionValue) {
     const progress = elapsed / moment.durationSec;
     const frameIndex = Math.round(progress * (moment.frames.length - 1));
     const baselineFrame = moment.frames[frameIndex];
-    const { releaseFrame, recoveryFrame } = moment.interception;
-    const status = baselineFrame.sourceFrame >= recoveryFrame ? "Recorded event · Home 2 intercepted the pass at 00:15.12."
-      : baselineFrame.sourceFrame >= releaseFrame ? "Recorded event · Away's pass is in flight."
-        : "Recorded event · Away has possession near the touchline.";
+    const { startFrame, endFrame, phases } = moment.action;
+    const phase = baselineFrame.sourceFrame >= endFrame ? 2 : Number(baselineFrame.sourceFrame >= startFrame);
+    const status = `Recorded event · ${phases[phase]}`;
     dashboard.update({ momentId: moment.id, candidateId, progress, playing, baselineFrame,
-      alternativeFrame: simulation?.alternativeFrames[frameIndex], coverPoint: simulation?.coverPoint,
+      alternativeFrame: simulation?.alternativeFrames[frameIndex], coverPoint: simulation?.tacticalPoints[frameIndex],
       analysis, compared: Boolean(simulation), status });
   }
 

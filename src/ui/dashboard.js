@@ -52,7 +52,7 @@ export function mountDashboard(root, {
           <li><span class="gx-dot gx-ball" aria-hidden="true"></span>Ball</li>
           <li><span class="gx-dot gx-replacement" aria-hidden="true"></span>${tracked ? "Recorded player under review" : "Replacement"}</li>
           <li><span class="gx-dot gx-ghost${tracked ? " gx-ghost-modeled" : ""}" aria-hidden="true"></span>${tracked ? "Modeled replacement (ghost)" : "Original player (ghost)"}</li>
-          ${tracked ? '<li><span class="gx-cover-icon" aria-hidden="true">+</span>Assigned cover point</li>' : ""}
+          ${tracked ? '<li><span class="gx-cover-icon" aria-hidden="true">+</span>Assigned tactical point</li>' : ""}
         </ul>
         <p class="gx-status" role="status" hidden></p>
         <p class="gx-source" hidden>Tracking and events by <a target="_blank" rel="noopener"></a></p>
@@ -90,9 +90,8 @@ export function mountDashboard(root, {
   let currentMoment;
   let currentAnalysis;
 
-  if (match.momentum?.length) {
-    find(".gx-insights").prepend(createMomentumChart(doc, match.momentum, match.moments[0], `${prefix}-momentum`));
-  }
+  const momentumChart = match.momentum?.length ? createMomentumChart(doc, match.momentum, `${prefix}-momentum`) : null;
+  if (momentumChart) find(".gx-insights").prepend(momentumChart.section);
   if (match.source) {
     const source = find(".gx-source");
     const link = source.querySelector("a");
@@ -122,6 +121,7 @@ export function mountDashboard(root, {
         .filter(Boolean)
         .map(({ id, displayName }) => ({ id, label: displayName }));
       candidateSelect.setOptions(candidates);
+      if (moment) momentumChart?.updateMarker(moment);
       currentMoment = moment;
     }
     momentSelect.setValue(momentId);
@@ -315,7 +315,7 @@ function setOptionalText(element, text) {
   setText(element, text ?? "");
 }
 
-function createMomentumChart(doc, momentum, moment, headingId) {
+function createMomentumChart(doc, momentum, headingId) {
   const section = doc.createElement("section");
   section.className = "gx-panel gx-momentum";
   section.setAttribute("aria-labelledby", headingId);
@@ -336,11 +336,16 @@ function createMomentumChart(doc, momentum, moment, headingId) {
     chart.append(column);
   }
   const marker = doc.createElement("i");
-  marker.style.left = `${moment.startTime / 60 / momentum.length * 100}%`;
-  marker.title = `Replay at ${moment.startClock}`;
   chart.append(marker);
-  section.querySelector(".gx-momentum-note").textContent = `Replay at ${moment.startClock} · Rolling 3-minute balance of recorded pass and shot location values.`;
-  return section;
+  const note = section.querySelector(".gx-momentum-note");
+  return {
+    section,
+    updateMarker(moment) {
+      marker.style.left = `${moment.startTime / 60 / momentum.length * 100}%`;
+      marker.title = `Replay at ${moment.startClock}`;
+      note.textContent = `Replay at ${moment.startClock} · Rolling 3-minute balance of recorded pass and shot location values.`;
+    },
+  };
 }
 
 function renderAnalysis(root, analysis) {
@@ -393,7 +398,7 @@ function renderAnalysis(root, analysis) {
   const coaching = add(root, "div", null, "gx-coaching");
   add(coaching, "h3", "Recommendation");
   add(coaching, "p", recommendation.title, "gx-recommendation");
-  if (Number.isFinite(recommendation.score)) add(coaching, "p", `Home wide-cover fit · ${recommendation.score}/100`, "gx-fit");
+  if (Number.isFinite(recommendation.score)) add(coaching, "p", `${recommendation.fitLabel ?? "Role fit"} · ${recommendation.score}/100`, "gx-fit");
   const reasons = add(coaching, "ul");
   for (const reason of recommendation.reasoning) add(reasons, "li", reason);
   add(coaching, "p", recommendation.caveat, "gx-caveat");

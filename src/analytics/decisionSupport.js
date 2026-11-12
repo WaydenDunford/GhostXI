@@ -3,6 +3,20 @@ const VALUE_RADIUS_METRES = 4;
 const MOMENTUM_BIN_SECONDS = 60;
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const clamp01 = (value) => Math.max(0, Math.min(1, value));
+const contexts = {
+  transition: {
+    role: "wide-cover", point: "cover point", window: "live pass", end: "recovery",
+    reach: "Interception reach", cue: "the pass release", task: "protect the wide lane",
+  },
+  press: {
+    role: "pressing", point: "pressing point", window: "press", end: "tackle",
+    reach: "Pressing reach", cue: "Away's recovery", task: "stay goal-side while closing down",
+  },
+  attack: {
+    role: "attacking support", point: "support point", window: "deep pass", end: "shot",
+    reach: "Receiving reach", cue: "the deep pass", task: "time the run into the receiving lane",
+  },
+};
 
 export function createPossessionValue(csv, pitch) {
   const grid = csv.trim().split(/\r?\n/).map((row) => row.split(",").map(Number));
@@ -33,22 +47,22 @@ export function buildMomentum(match, possessionValue) {
   return rolling.map((value, minute) => ({ minute, value: value / peak }));
 }
 
-function summarize(frames, playerId, coverPoint, interception, opponentAttacksRight, possessionValue) {
+function summarize(frames, playerId, tacticalPoints, action, ballTeamAttacksRight, possessionValue) {
   let totalDistance = 0;
   let closest = Infinity;
   let reachable = 0;
-  let passFrames = 0;
+  let actionFrames = 0;
   let peakValue = 0;
   let accessibleValue = 0;
-  for (const frame of frames) {
+  for (const [index, frame] of frames.entries()) {
     const player = frame.players[playerId];
-    totalDistance += distance(player, coverPoint);
-    if (frame.sourceFrame >= interception.releaseFrame && frame.sourceFrame < interception.recoveryFrame) {
+    totalDistance += distance(player, tacticalPoints[index]);
+    if (frame.sourceFrame >= action.startFrame && frame.sourceFrame < action.endFrame) {
       const ballDistance = distance(player, frame.ball);
-      const value = possessionValue(frame.ball, opponentAttacksRight);
+      const value = possessionValue(frame.ball, ballTeamAttacksRight);
       closest = Math.min(closest, ballDistance);
       reachable += Number(ballDistance <= REACH_METRES);
-      passFrames += 1;
+      actionFrames += 1;
       peakValue = Math.max(peakValue, value);
       accessibleValue = Math.max(accessibleValue, value * clamp01(1 - ballDistance / VALUE_RADIUS_METRES));
     }
@@ -56,7 +70,7 @@ function summarize(frames, playerId, coverPoint, interception, opponentAttacksRi
   return {
     coverError: totalDistance / frames.length,
     closest,
-    reachPercent: 100 * reachable / passFrames,
+    reachPercent: 100 * reachable / actionFrames,
     accessibleValue: 100 * accessibleValue,
     accessRatio: peakValue ? accessibleValue / peakValue : 0,
   };
@@ -64,9 +78,15 @@ function summarize(frames, playerId, coverPoint, interception, opponentAttacksRi
 
 export function analyzeScenario({ match, momentId, simulation, possessionValue }) {
   const moment = match.moments.find(({ id }) => id === momentId);
-  const { baselineFrames, alternativeFrames, outgoingPlayerId, incomingPlayerId, coverPoint } = simulation;
-  const summarizeBranch = (frames, playerId) => summarize(frames, playerId, coverPoint, moment.interception,
-    !match.homeAttacksRightFirstHalf, possessionValue);
+  const { baselineFrames, alternativeFrames, outgoingPlayerId, incomingPlayerId, tacticalPoints } = simulation;
+  const { action, context } = moment;
+  const { role, point, window, end, reach, cue, task } = contexts[context];
+  const recordedPlayer = match.players.find(({ id }) => id === outgoingPlayerId).displayName;
+  const homeHasBall = action.team === "HOME";
+  const ballTeam = homeHasBall ? "Home" : "Away";
+  const ballTeamAttacksRight = homeHasBall ? match.homeAttacksRightFirstHalf : !match.homeAttacksRightFirstHalf;
+  const summarizeBranch = (frames, playerId) => summarize(frames, playerId, tacticalPoints, action,
+    ballTeamAttacksRight, possessionValue);
   const original = summarizeBranch(baselineFrames, outgoingPlayerId);
   const candidate = summarizeBranch(alternativeFrames, incomingPlayerId);
   const metric = (id, label, unit, better, explanation) => ({
@@ -83,27 +103,28 @@ export function analyzeScenario({ match, momentId, simulation, possessionValue }
     : score >= 50 ? "Possible fit" : "Low fit";
 
   const comparison = candidate.closest <= original.closest
-    ? "The modeled profile closed to the pass at least as closely as Home 2. Review how the step affects wide-lane cover."
-    : "Home 2 got closer to the live pass. Coach the replacement to read the release cue and step into the lane sooner.";
+    ? `The modeled profile closed to the ball at least as closely as ${recordedPlayer}. Review whether it can still ${task}.`
+    : `${recordedPlayer} got closer to the ball. Coach the replacement to react to ${cue} and ${task}.`;
   const reachEvidence = candidate.reachPercent === 0
-    ? "The replacement stayed outside 1.6 m reach before the recorded recovery."
-    : `The replacement was within 1.6 m on ${candidate.reachPercent.toFixed(1)}% of pre-recovery pass frames.`;
+    ? `The replacement stayed outside 1.6 m reach before the recorded ${end}.`
+    : `The replacement was within 1.6 m on ${candidate.reachPercent.toFixed(1)}% of frames in the ${window}.`;
   return {
     metrics: [
-      metric("coverError", "Mean distance to cover point", "m", "lower", "Mean distance to the assigned wide-cover point over the eight-second clip."),
-      metric("closest", "Closest to the live pass", "m", "lower", "Minimum distance to the tracked ball after release and before the recorded recovery."),
-      metric("reachPercent", "Interception reach", "% of pass frames", "higher", "Share of live-pass frames within 1.6 m of the tracked ball. Distance alone cannot establish ball height or control."),
-      metric("accessibleValue", "Reachable possession value", "EPV × 100", "higher", "Maximum Away ball-location EPV discounted linearly by distance from 0 to 4 m during the live pass."),
+      metric("coverError", `Mean distance to ${point}`, "m", "lower", `Mean distance to the assigned ${point} across the clip.`),
+      metric("closest", `Closest during the ${window}`, "m", "lower", `Minimum distance to the tracked ball during the ${window}, before the recorded ${end}.`),
+      metric("reachPercent", reach, "% of action frames", "higher", `Share of frames during the ${window} within 1.6 m of the tracked ball. Distance alone cannot establish ball height or control.`),
+      metric("accessibleValue", "Reachable possession value", "EPV × 100", "higher", `Maximum ${ballTeam} ball-location EPV discounted linearly by distance from 0 to 4 m during the ${window}.`),
     ],
     recommendation: {
       title,
       score,
+      fitLabel: `Home ${role} fit`,
       reasoning: [
-        `${comparison} Closest approach was ${candidate.closest.toFixed(1)} m for the replacement and ${original.closest.toFixed(1)} m for Home 2.`,
+        `${comparison} Closest approach was ${candidate.closest.toFixed(1)} m for the replacement and ${original.closest.toFixed(1)} m for ${recordedPlayer}.`,
         reachEvidence,
-        `Home's wide-cover role awards ${fit.cover.toFixed(1)}/40 for positioning, ${fit.access.toFixed(1)}/40 for pass access, and ${fit.value.toFixed(1)}/20 for possession-value access.`,
+        `Home's ${role} role awards ${fit.cover.toFixed(1)}/40 for positioning, ${fit.access.toFixed(1)}/40 for access to the ball, and ${fit.value.toFixed(1)}/20 for possession-value access.`,
       ],
-      caveat: "The candidate profiles are hypothetical. This one-clip score describes fit for Home's assigned wide-cover role.",
+      caveat: `The candidate profiles are hypothetical. This one-clip score describes fit for Home's assigned ${role} role.`,
     },
     assumptions: simulation.assumptions,
     qualityLabel: "Low confidence · One clip · Assumed player attributes",
