@@ -136,6 +136,7 @@ function ConnectedLab() {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState("1");
   const [view, setView] = useState("original");
+  const [labels, setLabels] = useState<"focus" | "all">("focus");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [candidateId, setCandidateId] = useState("");
@@ -303,6 +304,7 @@ function ConnectedLab() {
       mode={mode}
       onSelect={selectPlayer}
       label={label}
+      focus={labels === "focus"}
     />
   );
   const chooseCandidate = (id: string) => {
@@ -666,6 +668,29 @@ function ConnectedLab() {
                     {v[0]!.toUpperCase() + v.slice(1)}
                   </ToggleGroupItem>
                 ))}
+              </ToggleGroup>
+              <ToggleGroup
+                type="single"
+                value={labels}
+                onValueChange={(v) => v && setLabels(v as "focus" | "all")}
+                variant="outline"
+                size="sm"
+                aria-label="Player labels"
+              >
+                <ToggleGroupItem
+                  value="focus"
+                  title="Name tags only for the compared, selected and on-ball players; others faded"
+                  className="px-3 data-[state=on]:bg-ghost/20 data-[state=on]:text-ghost"
+                >
+                  Focus
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="all"
+                  title="Name tags for all 22 players"
+                  className="px-3 data-[state=on]:bg-ghost/20 data-[state=on]:text-ghost"
+                >
+                  All
+                </ToggleGroupItem>
               </ToggleGroup>
             </div>
             <div className="flex flex-wrap items-center gap-2 border-t border-border/60 bg-background/40 px-4 py-2.5">

@@ -328,6 +328,7 @@ export function SimulationField({
   t,
   mode,
   showLabels = true,
+  focus = true,
   className,
   surface,
   players,
@@ -343,6 +344,8 @@ export function SimulationField({
   t: number;
   mode: FieldMode;
   showLabels?: boolean | undefined;
+  /** Focus: name tags only for the compared, selected and on-ball players; everyone else is faded. */
+  focus?: boolean | undefined;
   className?: string | undefined;
   surface: ReactNode;
   players: PitchPlayer[];
@@ -487,7 +490,7 @@ export function SimulationField({
             ? (sourceTrails?.["ball"] ?? []).map((p) => p.join(",")).join(" ")
             : trail(ballPath, t)
         }
-        className="fill-none stroke-foreground/40"
+        className="fill-none stroke-foreground/25"
         strokeWidth="0.2"
         markerEnd={t > 0.05 ? "url(#arrow)" : undefined}
       />
@@ -542,6 +545,10 @@ export function SimulationField({
         const fill = p.team === "home" ? "fill-home" : "fill-away";
         const onBall = carrier.id === p.id && carrier.d < 3;
         const isSelected = selectedId === p.id;
+        // In focus mode only the players the comparison is about keep full weight and a name tag.
+        const important = isGhost || isOrig || isSelected || onBall;
+        const hasSubject = origs.length + ghs.length > 0 || Boolean(selectedId);
+        const faded = focus && hasSubject && !important;
         return (
           <g
             key={p.id}
@@ -559,52 +566,53 @@ export function SimulationField({
                 : undefined
             }
             transform={`translate(${x} ${y})`}
-            opacity={mode === "overlay" && isOrig ? 0.85 : 1}
+            opacity={faded ? 0.45 : mode === "overlay" && isOrig ? 0.85 : 1}
             onClick={onPlayerClick ? () => onPlayerClick(p.id) : undefined}
             style={onPlayerClick ? { cursor: "pointer" } : undefined}
           >
-            <ellipse cx="0.3" cy="1.6" rx="1.6" ry="0.5" className="fill-background/40" />
+            <title>{p.label}</title>
+            <ellipse cx="0.2" cy="1.05" rx="1" ry="0.32" className="fill-background/40" />
             {isGhost && (
-              <circle r="1.6" className="ghost-ring fill-none stroke-ghost" strokeWidth="0.3" />
+              <circle r="1.45" className="ghost-ring fill-none stroke-ghost" strokeWidth="0.25" />
             )}
             {isSelected && (
               <circle
-                r="2.9"
+                r="2"
                 className="fill-accent/10 stroke-accent"
                 strokeWidth="0.3"
                 strokeDasharray="0.9 0.5"
               />
             )}
             {onBall && (
-              <circle r="2.6" className="fill-none stroke-foreground/70" strokeWidth="0.15" />
+              <circle r="1.8" className="fill-none stroke-foreground/70" strokeWidth="0.15" />
             )}
             <circle
-              r="1.75"
+              r="1.1"
               filter={isGhost ? "url(#glow)" : "url(#shadow)"}
               className={cn(
                 isGhost ? "fill-ghost/25 stroke-ghost" : fill,
                 isOrig ? "stroke-warning" : !isGhost && "stroke-foreground/80",
               )}
-              strokeWidth={isGhost || isOrig ? 0.4 : 0.18}
-              strokeDasharray={isGhost ? "0.7 0.35" : undefined}
+              strokeWidth={isGhost || isOrig ? 0.3 : 0.12}
+              strokeDasharray={isGhost ? "0.5 0.25" : undefined}
             />
             <text
               y="0.05"
               textAnchor="middle"
               dominantBaseline="central"
               className={cn("font-mono font-bold", isGhost ? "fill-ghost" : "fill-foreground")}
-              fontSize="1.45"
+              fontSize="1"
             >
               {p.num > 0 ? p.num : "—"}
             </text>
-            {showLabels && (
-              <g transform="translate(0 3.5)">
+            {showLabels && (!focus || important) && (
+              <g transform="translate(0 2.5)">
                 <rect
-                  x={-p.label.length * 0.42 - 0.6}
-                  y="-1"
-                  width={p.label.length * 0.84 + 1.2}
-                  height="1.9"
-                  rx="0.4"
+                  x={-p.label.length * 0.36 - 0.5}
+                  y="-0.85"
+                  width={p.label.length * 0.72 + 1}
+                  height="1.6"
+                  rx="0.35"
                   className={
                     isGhost ? "fill-ghost/20" : isOrig ? "fill-warning/20" : "fill-background/55"
                   }
@@ -616,13 +624,13 @@ export function SimulationField({
                     "font-sans font-semibold",
                     isGhost ? "fill-ghost" : isOrig ? "fill-warning" : "fill-foreground/90",
                   )}
-                  fontSize="1.3"
+                  fontSize="1.1"
                 >
                   {p.label}
                 </text>
               </g>
             )}
-            {onPlayerClick && <circle r="3.6" className="fill-transparent" />}
+            {onPlayerClick && <circle r="2.4" className="fill-transparent" />}
           </g>
         );
       })}
