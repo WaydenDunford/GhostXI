@@ -7,7 +7,13 @@
       { "id": 3869685, "competitionId": 43, "seasonId": 106 },
       { "id": 3943043, "competitionId": 55, "seasonId": 282 },
       { "id": 3906390, "competitionId": 72, "seasonId": 107 },
-      { "id": 4020846, "competitionId": 53, "seasonId": 315 }
+      { "id": 4020846, "competitionId": 53, "seasonId": 315 },
+      { "id": 3869354, "competitionId": 43, "seasonId": 106 },
+      { "id": 3857258, "competitionId": 43, "seasonId": 106 },
+      { "id": 3857269, "competitionId": 43, "seasonId": 106 },
+      { "id": 3857280, "competitionId": 43, "seasonId": 106 },
+      { "id": 3869253, "competitionId": 43, "seasonId": 106 },
+      { "id": 3869420, "competitionId": 43, "seasonId": 106 }
     ]
   },
   "transfermarkt": {
@@ -24,6 +30,14 @@
     { "statsbombId": 22084, "statsbombName": "Bukayo Saka", "transfermarktId": "433177", "transfermarktName": "Bukayo Saka", "country": "England", "dateOfBirth": "2001-09-05" },
     { "statsbombId": 30714, "statsbombName": "Jude Bellingham", "transfermarktId": "581678", "transfermarktName": "Jude Bellingham", "country": "England", "dateOfBirth": "2003-06-29" },
     { "statsbombId": 39461, "statsbombName": "Cole Palmer", "transfermarktId": "568177", "transfermarktName": "Cole Palmer", "country": "England", "dateOfBirth": "2002-05-06" },
-    { "statsbombId": 316046, "statsbombName": "Lamine Yamal Nasraoui Ebana", "transfermarktId": "937958", "transfermarktName": "Lamine Yamal", "country": "Spain", "dateOfBirth": "2007-07-13" }
+    { "statsbombId": 316046, "statsbombName": "Lamine Yamal Nasraoui Ebana", "transfermarktId": "937958", "transfermarktName": "Lamine Yamal", "country": "Spain", "dateOfBirth": "2007-07-13" },
+    { "statsbombId": 18395, "statsbombName": "Vinícius José Paixão de Oliveira Júnior", "transfermarktId": "371998", "transfermarktName": "Vinicius Junior", "country": "Brazil", "dateOfBirth": "2000-07-12" },
+    { "statsbombId": 10595, "statsbombName": "Raphael Dias Belloli", "transfermarktId": "411295", "transfermarktName": "Raphinha", "country": "Brazil", "dateOfBirth": "1996-12-14" },
+    { "statsbombId": 25104, "statsbombName": "Rodrygo Silva de Goes", "transfermarktId": "412363", "transfermarktName": "Rodrygo", "country": "Brazil", "dateOfBirth": "2001-01-09" },
+    { "statsbombId": 25363, "statsbombName": "Antony Matheus dos Santos", "transfermarktId": "602105", "transfermarktName": "Antony", "country": "Brazil", "dateOfBirth": "2000-02-24" },
+    { "statsbombId": 29976, "statsbombName": "Gabriel Teodoro Martinelli Silva", "transfermarktId": "655488", "transfermarktName": "Gabriel Martinelli", "country": "Brazil", "dateOfBirth": "2001-06-18" },
+    { "statsbombId": 3202, "statsbombName": "Gabriel Fernando de Jesus", "transfermarktId": "363205", "transfermarktName": "Gabriel Jesus", "country": "Brazil", "dateOfBirth": "1997-04-03" },
+    { "statsbombId": 4320, "statsbombName": "Neymar da Silva Santos Junior", "transfermarktId": "68290", "transfermarktName": "Neymar", "country": "Brazil", "dateOfBirth": "1992-02-05" },
+    { "statsbombId": 3280, "statsbombName": "Richarlison de Andrade", "transfermarktId": "378710", "transfermarktName": "Richarlison", "country": "Brazil", "dateOfBirth": "1997-05-10" }
   ]
 }
