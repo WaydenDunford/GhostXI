@@ -35,8 +35,10 @@ test("a still ball is met where it lies; a path leaving the pitch is not chased"
   const settings = { topSpeed: 9, acceleration: 6, engageRange: 6 };
   assert.deepEqual(interceptionTarget({ position: { x: 8, y: 3 }, velocity: { x: 0, y: 0 }, ball: { x: 10, y: 3 },
     previousBall: { x: 10, y: 3 }, dt: 0.04, tacticalPoint: { x: 8, y: 3 }, pitch, settings }), { x: 10, y: 3 });
-  assert.equal(interceptionTarget({ position: { x: 90, y: 34 }, velocity: { x: 0, y: 0 }, ball: { x: 104, y: 34 },
-    previousBall: { x: 103.6, y: 34 }, dt: 0.04, tacticalPoint: { x: 90, y: 34 }, pitch,
+  // The ball rolls slowly over the goal line right next to the player: without the touchline
+  // check he would chase it to about (106.4, 34), off the pitch.
+  assert.equal(interceptionTarget({ position: { x: 105, y: 32 }, velocity: { x: 0, y: 0 }, ball: { x: 104.6, y: 34 },
+    previousBall: { x: 104.52, y: 34 }, dt: 0.04, tacticalPoint: { x: 105, y: 32 }, pitch,
     settings: { ...settings, engageRange: 9 } }), null);
 });
 
