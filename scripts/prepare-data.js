@@ -1,6 +1,5 @@
 import { rename, rm, writeFile } from "node:fs/promises";
 import { attackingDirection, fetchEvents, fetchTrackingWindow } from "@pitchkit/data-providers/metrica";
-import { replacementProfiles } from "../src/simulation/alternative.js";
 
 const revision = "e706dd506b360d69d9d123d5b8026e7294b13996";
 const baseUrl = `https://raw.githubusercontent.com/metrica-sports/sample-data/${revision}/data`;
@@ -15,7 +14,6 @@ const scenarios = [
     description: "Away plays infield from the touchline. Home 2 makes the recorded interception at 00:15.12.",
     phases: ["Away has possession near the touchline.", "Away's pass is in flight.", "Home 2 intercepted the pass at 00:15.12."],
     anchor: { x: 29, y: 54.5 },
-    candidatePlayerIds: ["lane-reader", "patient-cover"],
   },
   {
     id: "home-defensive-press", title: "Home presses and wins a tackle", context: "press",
@@ -25,7 +23,6 @@ const scenarios = [
     description: "Away recovers the ball in Home's half. Home 1 closes down and wins the recorded tackle at 03:45.08.",
     phases: ["Play builds toward the defensive duel.", "Away has recovered the ball. Home closes down.", "Home 1 won the tackle at 03:45.08."],
     anchor: { x: 23, y: 42 },
-    candidatePlayerIds: ["patient-cover", "lane-reader"],
   },
   {
     id: "home-deep-pass-attack", title: "Home turns a deep pass into a shot", context: "attack",
@@ -35,7 +32,6 @@ const scenarios = [
     description: "Home 10 plays a deep pass to Home 8, who takes the recorded shot at 06:25.12.",
     phases: ["Home builds toward the deep pass.", "Home 10's pass to Home 8 is in flight.", "Home 8 took the shot at 06:25.12."],
     anchor: { x: 98, y: 25 }, ballLead: 6,
-    candidatePlayerIds: ["wide-runner", "lane-reader"],
   },
 ];
 const options = { baseUrl, signal: AbortSignal.timeout(90_000) };
@@ -57,12 +53,6 @@ const teamsById = new Map(players.map(({ player, team }) => [player, team]));
 if (lineup.home.length !== 11 || lineup.away.length !== 11 || teamsById.size !== 22) {
   throw new Error("Expected distinct recorded lineups of 11 players per team.");
 }
-const candidateIds = new Set(replacementProfiles.map(({ id }) => id));
-if (candidateIds.size !== replacementProfiles.length || replacementProfiles.some(({ id, team, traits }) =>
-  teamsById.has(id) || team !== "HOME" || ["pace", "positioning", "defending", "passing", "stamina"].some((name) =>
-    !Number.isFinite(traits[name]) || traits[name] < 0 || traits[name] > 100))) {
-  throw new Error("Replacement profiles must have distinct IDs and all five trait scores between 0 and 100.");
-}
 const homeDirection = attackingDirection(windows[0][1], "Home");
 if (!homeDirection) throw new Error("Unable to determine Home's first-half attacking direction.");
 
@@ -77,11 +67,7 @@ function clock(seconds) {
 }
 
 function prepareMoment(scenario, rawFrames) {
-  const { id, title, description, context, firstFrame, lastFrame, start, end, phases, anchor, ballLead, candidatePlayerIds } = scenario;
-  if (!candidatePlayerIds.length || new Set(candidatePlayerIds).size !== candidatePlayerIds.length
-    || !candidatePlayerIds.every((candidateId) => candidateIds.has(candidateId))) {
-    throw new Error(`${id}: expected distinct replacement profiles from the modeled squad.`);
-  }
+  const { id, title, description, context, firstFrame, lastFrame, start, end, phases, anchor, ballLead } = scenario;
   const [previous, ...clip] = rawFrames;
   const startTime = clip[0]?.["Time [s]"];
   const valid = previous?.Frame === firstFrame - 1 && clip.length === lastFrame - firstFrame + 1
@@ -114,7 +100,7 @@ function prepareMoment(scenario, rawFrames) {
   const initial = frames[0].players[targetPlayerId];
   const prior = metres(priorPlayer);
   return {
-    id, title, description, context, targetPlayerId, candidatePlayerIds, startTime, startClock: clock(startTime),
+    id, title, description, context, targetPlayerId, startTime, startClock: clock(startTime),
     durationSec: frames.at(-1).time, frames, anchor, ballLead,
     initialVelocity: { x: (initial.x - prior.x) / priorInterval, y: (initial.y - prior.y) / priorInterval },
     action: { startFrame: start.frame, endFrame: end.frame, team: start.team.toUpperCase(), phases },

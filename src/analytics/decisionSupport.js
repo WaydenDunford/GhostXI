@@ -82,6 +82,10 @@ export function analyzeScenario({ match, momentId, simulation, possessionValue }
   const { action, context } = moment;
   const { role, point, window, end, reach, cue, task } = contexts[context];
   const recordedPlayer = match.players.find(({ id }) => id === outgoingPlayerId).displayName;
+  const incoming = match.players.find(({ id }) => id === incomingPlayerId);
+  const candidateName = incoming?.scouting?.name ?? incoming?.displayName ?? "the replacement";
+  const engageRange = incoming?.settings?.engageRange;
+  const firstEngaged = simulation.engagedFrames?.findIndex(Boolean) ?? -1;
   const homeHasBall = action.team === "HOME";
   const ballTeam = homeHasBall ? "Home" : "Away";
   const ballTeamAttacksRight = homeHasBall ? match.homeAttacksRightFirstHalf : !match.homeAttacksRightFirstHalf;
@@ -103,11 +107,14 @@ export function analyzeScenario({ match, momentId, simulation, possessionValue }
     : score >= 50 ? "Possible fit" : "Low fit";
 
   const comparison = candidate.closest <= original.closest
-    ? `The modeled profile closed to the ball at least as closely as ${recordedPlayer}. Review whether it can still ${task}.`
+    ? `The modeled run closed to the ball at least as closely as ${recordedPlayer}. Review whether it can still ${task}.`
     : `${recordedPlayer} got closer to the ball. Coach the replacement to react to ${cue} and ${task}.`;
   const reachEvidence = candidate.reachPercent === 0
     ? `The replacement stayed outside 1.6 m reach before the recorded ${end}.`
     : `The replacement was within 1.6 m on ${candidate.reachPercent.toFixed(1)}% of frames in the ${window}.`;
+  const engagement = engageRange === undefined ? null : firstEngaged >= 0
+    ? `He went for the ball from ${baselineFrames[firstEngaged].time.toFixed(1)} s, when its path came within his ${engageRange.toFixed(1)} m engage range.`
+    : `He held the ${point}: the ball never came within his ${engageRange.toFixed(1)} m engage range in time.`;
   return {
     metrics: [
       metric("coverError", `Mean distance to ${point}`, "m", "lower", `Mean distance to the assigned ${point} across the clip.`),
@@ -122,11 +129,12 @@ export function analyzeScenario({ match, momentId, simulation, possessionValue }
       reasoning: [
         `${comparison} Closest approach was ${candidate.closest.toFixed(1)} m for the replacement and ${original.closest.toFixed(1)} m for ${recordedPlayer}.`,
         reachEvidence,
+        engagement,
         `Home's ${role} role awards ${fit.cover.toFixed(1)}/40 for positioning, ${fit.access.toFixed(1)}/40 for access to the ball, and ${fit.value.toFixed(1)}/20 for possession-value access.`,
-      ],
-      caveat: `The candidate profiles are hypothetical. This one-clip score describes fit for Home's assigned ${role} role.`,
+      ].filter(Boolean),
+      caveat: `Settings come from ${candidateName}'s 2024/25 A-League measurements (SkillCorner). The run is still a modeled estimate in a different match. This one-clip score describes fit for Home's assigned ${role} role.`,
     },
     assumptions: simulation.assumptions,
-    qualityLabel: "Low confidence · One clip · Assumed player attributes",
+    qualityLabel: "Low confidence · One clip · Measured player attributes",
   };
 }

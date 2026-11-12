@@ -2,28 +2,30 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import { analyzeScenario, buildMomentum, createPossessionValue } from "../src/analytics/decisionSupport.js";
-import { replacementProfiles, simulateAlternative } from "../src/simulation/alternative.js";
+import { simulateAlternative } from "../src/simulation/alternative.js";
+import { attachCandidates } from "../src/data/scouting.js";
 
-const [raw, grid] = await Promise.all([
+const [raw, grid, scouting] = await Promise.all([
   readFile(new URL("../src/data/metrica-game1.json", import.meta.url), "utf8"),
   readFile(new URL("../src/data/fot/EPV_grid.csv", import.meta.url), "utf8"),
+  readFile(new URL("../src/data/scouting-candidates.json", import.meta.url), "utf8"),
 ]);
-const match = JSON.parse(raw);
+const match = attachCandidates(JSON.parse(raw), JSON.parse(scouting));
 const possessionValue = createPossessionValue(grid, match.pitch);
 const simulate = (momentId, candidateId) => simulateAlternative({ match, momentId, candidateId });
 
-test("all three moments contain complete tracking and compatible modeled candidates", () => {
+test("all three moments contain complete tracking and four real candidates", () => {
   assert.deepEqual(match.moments.map(({ context }) => context).sort(), ["attack", "press", "transition"]);
   const starters = [...match.lineup.home, ...match.lineup.away].sort();
   assert.equal(new Set(starters).size, 22);
-  assert.ok(replacementProfiles.filter(({ age }) => age < 21).length >= 2);
   for (const moment of match.moments) {
     assert.equal(moment.frames.length, 201);
     assert.equal(moment.durationSec, 8);
     assert.ok(match.lineup.home.includes(moment.targetPlayerId));
     for (const frame of moment.frames) assert.deepEqual(Object.keys(frame.players).sort(), starters);
+    assert.equal(moment.candidatePlayerIds.length, 4);
     for (const id of moment.candidatePlayerIds) {
-      assert.ok(replacementProfiles.some((profile) => profile.id === id));
+      assert.ok(match.players.some((player) => player.id === id && player.settings));
       assert.ok(!starters.includes(id));
     }
   }
@@ -55,12 +57,14 @@ for (const moment of match.moments) {
       assert.match(qualityLabel, /Low confidence/);
       return analysis;
     });
-    assert.deepEqual(analyses[0].metrics.map(({ baseline }) => baseline), analyses[1].metrics.map(({ baseline }) => baseline));
+    for (const analysis of analyses.slice(1)) {
+      assert.deepEqual(analysis.metrics.map(({ baseline }) => baseline), analyses[0].metrics.map(({ baseline }) => baseline));
+    }
     assert.notDeepEqual(analyses[0].metrics.map(({ alternative }) => alternative), analyses[1].metrics.map(({ alternative }) => alternative));
     if (moment.id === "home-wide-interception") {
-      assert.deepEqual(analyses.map(({ recommendation }) => recommendation.score), [73, 71]);
+      assert.deepEqual(analyses.map(({ recommendation }) => recommendation.score), [86, 64, 91, 92]);
       assert.deepEqual(analyses[0].metrics.map(({ baseline, alternative }) => [baseline.toFixed(2), alternative.toFixed(2)]),
-        [["3.47", "1.53"], ["2.82", "1.82"], ["0.00", "0.00"], ["0.70", "1.21"]]);
+        [["3.47", "1.23"], ["2.82", "0.89"], ["0.00", "3.13"], ["0.70", "1.85"]]);
     }
     assert.deepEqual(moment.frames, JSON.parse(raw).moments.find(({ id }) => id === moment.id).frames);
   });

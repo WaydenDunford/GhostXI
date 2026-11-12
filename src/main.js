@@ -1,6 +1,7 @@
 import { mountDashboard } from "./ui/dashboard.js";
-import { replacementProfiles, simulateAlternative } from "./simulation/alternative.js";
+import { simulateAlternative } from "./simulation/alternative.js";
 import { analyzeScenario, buildMomentum, createPossessionValue } from "./analytics/decisionSupport.js";
+import { attachCandidates } from "./data/scouting.js";
 
 const root = document.querySelector("#app");
 
@@ -11,17 +12,17 @@ async function load(path) {
 }
 
 try {
-  const [recording, grid] = await Promise.all([
+  const [recording, grid, scouting] = await Promise.all([
     load("./data/metrica-game1.json").then((response) => response.json()),
     load("./data/fot/EPV_grid.csv").then((response) => response.text()),
+    load("./data/scouting-candidates.json").then((response) => response.json()),
   ]);
   if (!recording.moments.every(({ action }) => action)) {
     throw new Error("The local Metrica cache needs to be refreshed for the expanded scenarios.");
   }
   const possessionValue = createPossessionValue(grid, recording.pitch);
   const match = {
-    ...recording,
-    players: [...recording.players, ...replacementProfiles],
+    ...attachCandidates(recording, scouting),
     momentum: buildMomentum(recording, possessionValue),
   };
   root.replaceChildren();
