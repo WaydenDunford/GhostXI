@@ -18,25 +18,49 @@ const PARTS = {
 const MAX_PENDING = 3; // staged packages at once: about 1 GB on disk in the worst case
 const STALE_MS = 30 * 60 * 1000; // abandoned staging folders are deleted after 30 minutes
 const digest = (value) => createHash("sha256").update(value).digest();
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]"]);
+const hostName = (value) => String(value ?? "").trim().toLowerCase().replace(/:\d+$/, "");
+const loopbackIp = (ip) => /^(127(\.\d{1,3}){3}|::1|::ffff:127(\.\d{1,3}){3})$/.test(String(ip).trim());
 
 /**
  * PUT  /api/v1/uploads/:uploadId/:part   raw file body (part = match | events | tracking)
  * POST /api/v1/uploads/:uploadId/import  validates the package and adds the match to the catalog
  *
- * With `token`, every upload request needs `Authorization: Bearer <token>`. Without it,
- * server/index.js only enables uploads when the API listens on a loopback address.
+ * Access: with `token`, every request needs `Authorization: Bearer <token>`. Without a token,
+ * uploads are refused unless `allowLocal` is set (an explicit opt-in that scripts/run-app.js
+ * makes because it binds both the API and the frontend proxy to 127.0.0.1); even then only
+ * direct same-machine requests pass, never forwarded ones or a foreign Host (DNS rebinding).
  */
-export function createUploadHandler({ directory, service, reload, token = null }) {
+export function createUploadHandler({ directory, service, reload, token = null, allowLocal = false }) {
   const staging = join(directory, "staging");
   const replays = join(directory, "replays");
+  const reserved = new Map(); // uploadId → reservation time; checked and set without an await between
   let importing = false;
 
-  const authorized = (request) => {
-    if (!token) return true;
-    const header = request.headers?.authorization ?? "";
-    // Hashing first gives equal-length inputs, so the comparison leaks no timing.
-    return timingSafeEqual(digest(header.startsWith("Bearer ") ? header.slice(7) : ""), digest(token));
-  };
+  function checkAccess(request) {
+    const headers = request.headers ?? {};
+    if (token) {
+      const header = headers.authorization ?? "";
+      // Hashing first gives equal-length inputs, so the comparison leaks no timing.
+      if (!timingSafeEqual(digest(header.startsWith("Bearer ") ? header.slice(7) : ""), digest(token))) {
+        throw new DomainError("This server requires an upload key.", "UPLOAD_KEY_REQUIRED", 401);
+      }
+      return;
+    }
+    if (!allowLocal) {
+      throw new DomainError("Club uploads are disabled on this server; an administrator must set GHOSTXI_UPLOAD_TOKEN.",
+        "UPLOADS_DISABLED", 403);
+    }
+    const forwardedFor = headers["x-forwarded-for"];
+    const local = loopbackIp(request.socket?.remoteAddress ?? "") && LOOPBACK_HOSTS.has(hostName(headers.host))
+      && !headers.forwarded && !headers["x-real-ip"]
+      && (!forwardedFor || String(forwardedFor).split(",").every(loopbackIp))
+      && (!headers["x-forwarded-host"] || LOOPBACK_HOSTS.has(hostName(headers["x-forwarded-host"])));
+    if (!local) {
+      throw new DomainError("Uploads from outside this machine need an upload key (GHOSTXI_UPLOAD_TOKEN).",
+        "UPLOAD_KEY_REQUIRED", 401);
+    }
+  }
 
   async function liveStagingFolders() {
     let names = [];
@@ -45,18 +69,24 @@ export function createUploadHandler({ directory, service, reload, token = null }
     for (const name of names) {
       const folder = join(staging, name);
       try {
-        if (Date.now() - (await stat(folder)).mtimeMs > STALE_MS) await rm(folder, { recursive: true, force: true });
-        else live.push(name);
+        if (Date.now() - (await stat(folder)).mtimeMs > STALE_MS) {
+          await rm(folder, { recursive: true, force: true });
+          reserved.delete(name);
+        } else live.push(name);
       } catch { /* removed by a concurrent request */ }
     }
+    for (const [id, at] of reserved) if (Date.now() - at > STALE_MS) reserved.delete(id);
     return live;
   }
 
   async function receive(request, uploadId, part) {
     const live = await liveStagingFolders();
-    if (!live.includes(uploadId) && live.length >= MAX_PENDING) {
+    // Check and reserve in one synchronous step, so concurrent requests cannot share the last slot.
+    const pending = new Set([...live, ...reserved.keys()]);
+    if (!pending.has(uploadId) && pending.size >= MAX_PENDING) {
       throw new DomainError("Too many uploads are in progress; finish one or try again shortly.", "UPLOADS_BUSY", 429);
     }
+    reserved.set(uploadId, Date.now());
     const folder = join(staging, uploadId);
     await mkdir(folder, { recursive: true });
     let bytes = 0;
@@ -98,6 +128,7 @@ export function createUploadHandler({ directory, service, reload, token = null }
     } finally {
       importing = false;
       await rm(folder, { recursive: true, force: true });
+      reserved.delete(uploadId);
     }
   }
 
@@ -117,7 +148,7 @@ export function createUploadHandler({ directory, service, reload, token = null }
       response.setHeader("Allow", `${method}, OPTIONS`);
       throw new DomainError(`Use ${method} for this route.`, "METHOD_NOT_ALLOWED", 405);
     }
-    if (!authorized(request)) throw new DomainError("This server requires an upload key.", "UPLOAD_KEY_REQUIRED", 401);
+    checkAccess(request);
     const result = action === "import" ? await importPackage(uploadId) : await receive(request, uploadId, action);
     send(response, action === "import" ? 201 : 200, { data: result });
     return true;

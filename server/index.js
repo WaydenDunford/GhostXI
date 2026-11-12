@@ -19,13 +19,13 @@ for (const origin of allowedOrigins) {
 // loaded service, so an import only has to reload and swap it.
 let current = await loadFootballService();
 const service = new Proxy({}, { get: (_target, key) => current[key] });
-// Uploads need a key (GHOSTXI_UPLOAD_TOKEN) unless the API only listens on this machine.
+// Uploads need a key (GHOSTXI_UPLOAD_TOKEN). Keyless uploads are an explicit opt-in
+// (GHOSTXI_ALLOW_LOCAL_UPLOADS=1, set by scripts/run-app.js) and only for a loopback API.
 const uploadToken = process.env.GHOSTXI_UPLOAD_TOKEN || null;
-const uploads = uploadToken || ["127.0.0.1", "::1", "localhost"].includes(host)
-  ? createUploadHandler({ directory: fileURLToPath(new URL("../data/uploads/", import.meta.url)), service, token: uploadToken,
-    reload: async () => { current = await loadFootballService(); } })
-  : null;
-if (!uploads) console.warn("Club uploads are disabled: set GHOSTXI_UPLOAD_TOKEN to allow them on a non-loopback HOST.");
+const allowLocal = process.env.GHOSTXI_ALLOW_LOCAL_UPLOADS === "1" && ["127.0.0.1", "::1", "localhost"].includes(host);
+const uploads = createUploadHandler({ directory: fileURLToPath(new URL("../data/uploads/", import.meta.url)), service,
+  token: uploadToken, allowLocal, reload: async () => { current = await loadFootballService(); } });
+if (!uploadToken && !allowLocal) console.warn("Club uploads are disabled: set GHOSTXI_UPLOAD_TOKEN, or start with npm run dev for local-only uploads.");
 const server = createApiServer({ service, allowedOrigins, uploads });
 server.on("error", (error) => { console.error(`GhostXI API could not start: ${error.message}`); process.exitCode = 1; });
 server.listen(port, host, () => console.log(`GhostXI API ready at http://${host}:${port}/api/v1`));

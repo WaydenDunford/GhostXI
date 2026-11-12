@@ -34,13 +34,17 @@ is never committed or redistributed.
 
 ## Access and limits
 
-- **Who can upload:** by default the API listens on `127.0.0.1`, and uploads are
-  accepted only there. To accept uploads on any other `HOST`, set
-  `GHOSTXI_UPLOAD_TOKEN`; otherwise the server disables the upload routes and logs
-  a warning. With a token, every upload request needs `Authorization: Bearer <token>`,
-  and the dialog asks for an "Upload key" when the server requires one. If you expose
-  the frontend (its `/api` proxy) beyond this machine, set the token too.
-- **Disk:** at most 3 packages can be staged at once. Abandoned staging folders are
+- **Who can upload:** uploads need a key. Set `GHOSTXI_UPLOAD_TOKEN` and every upload
+  request must send `Authorization: Bearer <token>`. The dialog asks for an "Upload
+  key" when the server requires one. Without a key, uploads are disabled.
+- **Local demo exception:** `npm run dev` / `npm start` set
+  `GHOSTXI_ALLOW_LOCAL_UPLOADS=1`. That is safe only because `scripts/run-app.js` binds
+  both the API and the frontend proxy to `127.0.0.1`. Even then, a request passes only
+  if it is direct and same-machine: loopback client address and `Host`, and no
+  `Forwarded`/`X-Forwarded-*` from elsewhere. Anything else needs the key. If you run
+  the servers some other way, or expose them, use a key.
+- **Disk:** at most 3 packages can be staged at once. A slot is reserved atomically,
+  so simultaneous requests cannot exceed the cap. Abandoned staging folders are
   deleted after 30 minutes. Size caps: match 5 MB, events 25 MB, tracking 300 MB.
 - **Memory:** tracking is read line by line, and a line over 1 MB is rejected before
   it is buffered. A file may hold at most 250,000 frames and 150,000 event rows. One
@@ -60,6 +64,18 @@ POST /api/v1/uploads/<upload-id>/import     → { id, name, date, competition, s
 ```
 
 `<upload-id>` is 8–64 lowercase letters, digits or hyphens; the frontend uses a UUID.
+
+## Demo package
+
+To demonstrate an upload without club data, use a SkillCorner Open Data match that
+is not in `config/skillcorner-sources.json`. Western United vs Sydney FC, 2025-04-27
+(MIT licence, revision `4340d274572876239c154c90bc507a9b3250a656`):
+
+```text
+https://raw.githubusercontent.com/SkillCorner/opendata/4340d274572876239c154c90bc507a9b3250a656/data/matches/2013725/2013725_match.json
+https://raw.githubusercontent.com/SkillCorner/opendata/4340d274572876239c154c90bc507a9b3250a656/data/matches/2013725/2013725_dynamic_events.csv
+https://media.githubusercontent.com/media/SkillCorner/opendata/4340d274572876239c154c90bc507a9b3250a656/data/matches/2013725/2013725_tracking_extrapolated.jsonl
+```
 
 ## Not yet supported
 

@@ -60,13 +60,44 @@ test("upload routes require the key when one is configured", async () => {
   await assert.rejects(call("Bearer wrong"), (e) => e.status === 401);
 });
 
+// A direct same-machine request, as Node's http server would present it.
+const localRequest = (method, headers = {}, body = null) => Object.assign(body ? Readable.from([Buffer.from(body)]) : {},
+  { method, headers: { host: "127.0.0.1:8787", ...headers }, socket: { remoteAddress: "127.0.0.1" } });
+
+test("without a key, uploads are off unless local mode is explicitly enabled", async () => {
+  const call = (handler, headers = {}, remoteAddress = "127.0.0.1") => handler({
+    request: { ...localRequest("POST", headers), socket: { remoteAddress } },
+    response: {}, params: ["api", "v1", "uploads", "abcdefgh", "import"], send: () => {} });
+  const off = createUploadHandler({ directory: tmpdir(), service: {}, reload: async () => {} });
+  await assert.rejects(call(off), (e) => e.status === 403 && e.code === "UPLOADS_DISABLED");
+  const local = createUploadHandler({ directory: join(tmpdir(), "ghostxi-none"), service: {}, reload: async () => {}, allowLocal: true });
+  for (const [headers, remote] of [[{ host: "evil.example:8787" }, "127.0.0.1"], [{ "x-forwarded-for": "203.0.113.9" }, "127.0.0.1"],
+    [{ forwarded: "for=203.0.113.9" }, "127.0.0.1"], [{}, "203.0.113.9"]]) {
+    await assert.rejects(call(local, headers, remote), (e) => e.status === 401, JSON.stringify(headers));
+  }
+  // A genuine local request passes access control and reaches validation (no files staged).
+  await assert.rejects(call(local), (e) => e.status === 400 && /Upload the match file/.test(e.message));
+  await assert.rejects(call(local, { "x-forwarded-for": "127.0.0.1" }), (e) => e.status === 400);
+});
+
+test("concurrent uploads cannot exceed the staging cap", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "ghostxi-race-"));
+  try {
+    const handler = createUploadHandler({ directory: dir, service: {}, reload: async () => {}, allowLocal: true });
+    const results = await Promise.allSettled(["race-0001", "race-0002", "race-0003", "race-0004", "race-0005"].map((id) =>
+      handler({ request: localRequest("PUT", {}, "{}"), response: {}, params: ["api", "v1", "uploads", id, "match"], send: () => {} })));
+    assert.equal(results.filter((r) => r.status === "fulfilled").length, 3);
+    assert.ok(results.filter((r) => r.status === "rejected").every((r) => r.reason.status === 429));
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
 test("staging is capped and abandoned uploads are swept", async () => {
   const dir = await mkdtemp(join(tmpdir(), "ghostxi-staging-"));
   try {
     for (const id of ["pending-1", "pending-2", "pending-3"]) await mkdir(join(dir, "staging", id), { recursive: true });
-    const handler = createUploadHandler({ directory: dir, service: {}, reload: async () => {} });
+    const handler = createUploadHandler({ directory: dir, service: {}, reload: async () => {}, allowLocal: true });
     const sent = [];
-    const put = (id) => handler({ request: Object.assign(Readable.from([Buffer.from("{}")]), { method: "PUT", headers: {} }),
+    const put = (id) => handler({ request: localRequest("PUT", {}, "{}"),
       response: {}, params: ["api", "v1", "uploads", id, "match"], send: (_response, status, body) => sent.push([status, body]) });
     await assert.rejects(put("pending-4"), (e) => e.status === 429);
     const old = new Date(Date.now() - 60 * 60 * 1000);
