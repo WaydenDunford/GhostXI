@@ -1,4 +1,6 @@
+import { fileURLToPath } from "node:url";
 import { createApiServer } from "./app.js";
+import { createUploadHandler } from "./club-uploads.js";
 import { loadFootballService } from "./service.js";
 
 const host = process.env.HOST ?? "127.0.0.1";
@@ -13,8 +15,13 @@ for (const origin of allowedOrigins) {
     throw new Error("CORS_ORIGINS must contain exact HTTP(S) origins without paths or trailing slashes.");
   }
 }
-const service = await loadFootballService();
-const server = createApiServer({ service, allowedOrigins });
+// Club uploads add matches at runtime: the proxy always forwards to the latest
+// loaded service, so an import only has to reload and swap it.
+let current = await loadFootballService();
+const service = new Proxy({}, { get: (_target, key) => current[key] });
+const uploads = createUploadHandler({ directory: fileURLToPath(new URL("../data/uploads/", import.meta.url)), service,
+  reload: async () => { current = await loadFootballService(); } });
+const server = createApiServer({ service, allowedOrigins, uploads });
 server.on("error", (error) => { console.error(`GhostXI API could not start: ${error.message}`); process.exitCode = 1; });
 server.listen(port, host, () => console.log(`GhostXI API ready at http://${host}:${port}/api/v1`));
 for (const signal of ["SIGINT", "SIGTERM"]) process.once(signal, () => server.close());

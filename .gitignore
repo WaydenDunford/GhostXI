@@ -19,3 +19,4 @@ frontend/.tanstack/
 frontend/.wrangler/
 frontend/.env.local
 frontend/.env.*.local
+data/uploads/
