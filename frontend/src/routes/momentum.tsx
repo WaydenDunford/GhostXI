@@ -46,7 +46,9 @@ function MomentumView() {
   const sourceEpv = dataset.momentumMethod?.startsWith("SkillCorner");
   const { moments, momentumSeries, match } = dataset;
   const ghostMomentum =
-    !eventMode && selection?.scenario.matchId === matchId ? selection.result.momentum : undefined;
+    config.id === "football" && !eventMode && selection?.scenario.matchId === matchId
+      ? selection.result.momentum
+      : undefined;
   const top = [...moments].sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact)).slice(0, 10);
   return (
     <div className="space-y-4">
@@ -98,6 +100,9 @@ function MomentumView() {
               <CartesianGrid stroke="var(--border)" strokeDasharray="2 4" vertical={false} />
               <XAxis
                 dataKey="minute"
+                type="number"
+                domain={["dataMin", "dataMax"]}
+                scale="linear"
                 stroke="var(--muted-foreground)"
                 fontSize={11}
                 tickFormatter={config.axisTick}

@@ -41,12 +41,7 @@ import { GhostMomentum } from "./ghost-momentum";
 import { Input } from "@/components/ui/input";
 
 // Accent-insensitive so typing "vinicius" finds "Vinícius Júnior".
-const searchable = (text: string) =>
-  text
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .trim();
+const searchable = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 
 export function Picker({
   label,
@@ -158,6 +153,15 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
     { name: string; result: VerifiedSimulationResult }[]
   >([]);
   const [isFull, setIsFull] = useState(false);
+  const simulationGeneration = useRef(0);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      simulationGeneration.current++;
+    };
+  }, []);
   useEffect(() => {
     const update = () => setIsFull(document.fullscreenElement === field.current);
     document.addEventListener("fullscreenchange", update);
@@ -204,6 +208,7 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
     [...match!.players, ...candidateList].map((p) => [p.id, p.name]),
   );
   const clear = () => {
+    simulationGeneration.current++;
     setResult(null);
     setSelection(null);
     setBranchId("");
@@ -253,7 +258,10 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
     }
   };
   const showSimulation = async (scenario: SavedSimulationScenario) => {
+    if (!mounted.current) return;
+    const generation = simulationGeneration.current;
     const next = await ghostxi.simulateSavedScenario(scenario.id);
+    if (!mounted.current || generation !== simulationGeneration.current) return;
     setResult(next);
     setView("overlay");
     setBranchId(next.branches.at(-1)?.id ?? "");
@@ -262,6 +270,7 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
     toast.success("Ghost simulation completed");
   };
   const create = async (simulate: boolean) => {
+    const generation = simulationGeneration.current;
     const swaps = rows.length
       ? rows
       : candidate
@@ -277,17 +286,22 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
       replacements: swaps,
     });
     await refreshSaved();
+    if (!mounted.current || generation !== simulationGeneration.current) return;
     if (simulate) await showSimulation(scenario);
     else toast.success("Scenario saved to GhostXI");
   };
   const addReplacement = (candidate?: ReplacementCandidate) => {
     const firstTeam = match!.players.find((p) => p.id === rows[0]?.originalPlayerId)?.teamId;
     const outgoing =
-      !rows.some((r) => r.originalPlayerId === playerId) && (!firstTeam || firstTeam === teamId)
+      frames[0]?.players[playerId] != null &&
+      !rows.some((r) => r.originalPlayerId === playerId) &&
+      (!firstTeam || firstTeam === teamId)
         ? selected
         : match!.players.find(
             (p) =>
-              p.teamId === (firstTeam ?? teamId) && !rows.some((r) => r.originalPlayerId === p.id),
+              p.teamId === (firstTeam ?? teamId) &&
+              frames[0]?.players[p.id] != null &&
+              !rows.some((r) => r.originalPlayerId === p.id),
           );
     const incoming =
       candidate ?? candidateList.find((c) => !rows.some((r) => r.candidatePlayerId === c.id));
@@ -881,6 +895,7 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
                     options={match.players
                       .filter(
                         (p) =>
+                          frames[0]?.players[p.id] != null &&
                           p.teamId ===
                             match.players.find((p) => p.id === rows[0]?.originalPlayerId)?.teamId &&
                           !rows.some((r, j) => j !== i && r.originalPlayerId === p.id),
@@ -1064,6 +1079,7 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
               key={m.id}
               size="sm"
               variant={activeMoment?.id === m.id ? "default" : "outline"}
+              disabled={busy}
               onClick={() => changeMoment(m.id)}
             >
               {Math.floor(m.timeSec / 60)}:{String(Math.floor(m.timeSec % 60)).padStart(2, "0")} ·{" "}
