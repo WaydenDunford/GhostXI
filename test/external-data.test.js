@@ -92,9 +92,9 @@ test("real sources are served through the HTTP/client API with historical ID enr
   const api = createGhostXIClient({ baseUrl: `${origin}/api/v1` });
   try {
     const sources = await api.getDatasets();
-    assert.equal(sources.statsbomb.matchCount, 42);
+    assert.equal(sources.statsbomb.matchCount, 48);
     assert.ok(sources.transfermarkt.playerCount > 50_000);
-    assert.equal(sources.transfermarkt.curatedPlayerLinkCount, 6);
+    assert.equal(sources.transfermarkt.curatedPlayerLinkCount, 14);
     assert.ok(sources.files.every(({ sha256 }) => /^[a-f0-9]{64}$/.test(sha256)));
     const matches = await api.getEventMatches();
     assert.deepEqual(matches.slice(0, 4).map(({ providerId }) => providerId), [3869685, 3943043, 3906390, 4020846]);
