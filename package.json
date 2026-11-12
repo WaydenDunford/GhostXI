@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "prepare:data": "node scripts/prepare-data.js",
+    "prepare:scouting": "node scripts/prepare-scouting.js",
     "test": "node --test"
   },
   "engines": { "node": ">=20" },
