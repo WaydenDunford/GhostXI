@@ -24,7 +24,7 @@ export function MatchSelector() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="events">Real match events</SelectItem>
-            <SelectItem value="tracking">Metrica tracking</SelectItem>
+            <SelectItem value="tracking">Tracking replays</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -67,34 +67,66 @@ export function MatchSelector() {
           </div>
         </>
       ) : (
-        <div className="min-w-0 flex-1 basis-72">
-          <label className="text-eyebrow" htmlFor="tracking-match">
-            Anonymous source recording
-          </label>
-          <Select
-            value={b.matchId}
-            onValueChange={(id) => {
-              b.setMatchId(id);
-              b.setSelection(null);
-            }}
-          >
-            <SelectTrigger id="tracking-match" aria-label="Select tracking match">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {b.matches.map((m) => (
-                <SelectItem value={m.id} key={m.id}>
-                  {m.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <>
+          <div className="w-56">
+            <label className="text-eyebrow" htmlFor="tracking-team">
+              Team
+            </label>
+            <Select value={b.trackingTeam} onValueChange={b.setTrackingTeam}>
+              <SelectTrigger id="tracking-team" aria-label="Select tracking team">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All tracking teams</SelectItem>
+                {b.trackingTeams.map((t) => (
+                  <SelectItem value={t} key={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="min-w-0 flex-1 basis-72">
+            <label className="text-eyebrow" htmlFor="tracking-match">
+              Match · {b.trackingMatches.length} available
+            </label>
+            <Select
+              value={b.matchId}
+              onValueChange={(id) => {
+                b.setMatchId(id);
+                b.setSelection(null);
+              }}
+            >
+              <SelectTrigger id="tracking-match" aria-label="Select tracking match">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {b.trackingMatches.map((m) => (
+                  <SelectItem value={m.id} key={m.id}>
+                    {m.date ? `${m.date} · ` : ""}
+                    {m.name}
+                    {m.score ? ` · ${m.score.home}–${m.score.away}` : " · anonymous source"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </>
       )}
       {b.sourceMode === "events" && b.eventMatch.data && (
         <p className="basis-full text-xs text-muted-foreground">
           {b.eventMatch.data.competition} · {b.eventMatch.data.season} · {b.eventMatch.data.date} ·
           StatsBomb Open Data · recorded events and lineups; continuous tracking unavailable.
+        </p>
+      )}
+      {b.sourceMode === "tracking" && b.match && (
+        <p className="basis-full text-xs text-muted-foreground">
+          {b.match.competition ?? b.match.source.name} · {b.match.season ?? "Source sample"} ·{" "}
+          {b.match.date ?? "Date unavailable"} · {b.match.coverage.segments.length} imported replay
+          windows
+          {b.match.provider === "skillcorner"
+            ? " · Detected and extrapolated positions are labeled; final score shown."
+            : ""}
         </p>
       )}
     </div>

@@ -1,0 +1,7 @@
+{
+  "repository": "https://github.com/SkillCorner/opendata",
+  "revision": "4340d274572876239c154c90bc507a9b3250a656",
+  "matchIds": [2017461, 2016236, 2015213],
+  "windowSeconds": 8,
+  "windowsPerMatch": 5
+}

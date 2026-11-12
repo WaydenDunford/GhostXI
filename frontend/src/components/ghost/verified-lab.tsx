@@ -106,11 +106,11 @@ export function BackendGate({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-export function VerifiedLab() {
+export function VerifiedLab({ momentIndex }: { momentIndex?: number | undefined }) {
   const { matchId } = useBackend();
   return (
     <BackendGate>
-      <ConnectedLab key={matchId} />
+      <ConnectedLab key={`${matchId}:${momentIndex ?? ""}`} momentIndex={momentIndex} />
     </BackendGate>
   );
 }
@@ -122,11 +122,12 @@ export function replacementsOf(s: SavedSimulationScenario): Swap[] {
     : [{ originalPlayerId: s.originalPlayerId, candidatePlayerId: s.candidatePlayerId }];
 }
 
-function ConnectedLab() {
+function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
   const { match, matchId, setSelection } = useBackend();
   const queryClient = useQueryClient();
   const [playerId, setPlayerId] = useState(
-    match!.players.find((p) => p.id === "Player2")?.id ?? match!.players[0]!.id,
+    match!.players.find((p) => p.id === "Player2")?.id ??
+      match!.coverage.segments[0]!.playerIds[0]!,
   );
   const [momentId, setMomentId] = useState("");
   const [rows, setRows] = useState<Swap[]>([]);
@@ -155,15 +156,23 @@ function ConnectedLab() {
     queryKey: ["ghostxi", "moments", matchId, playerId],
     queryFn: () => ghostxi.getRecommendedMoments(matchId, { playerId, limit: 5 }),
   });
-  const activeMoment = moments.data?.find((m) => m.id === momentId) ?? moments.data?.[0];
+  const activeMoment =
+    moments.data?.find((m) => m.id === momentId) ??
+    moments.data?.[(momentIndex ?? 1) - 1] ??
+    moments.data?.[0];
   const tracking = useQuery({
     queryKey: ["ghostxi", "tracking", matchId, activeMoment?.id],
     queryFn: () => ghostxi.getReplayTracking(matchId, { momentId: activeMoment!.id, limit: 2000 }),
     enabled: !!activeMoment,
   });
   const candidates = useQuery({
-    queryKey: ["ghostxi", "candidates", matchId, playerId],
-    queryFn: () => ghostxi.getReplacementCandidates({ matchId, replacePlayerId: playerId }),
+    queryKey: ["ghostxi", "candidates", matchId, playerId, activeMoment?.id],
+    queryFn: () =>
+      ghostxi.getReplacementCandidates({
+        matchId,
+        replacePlayerId: playerId,
+        ...(activeMoment ? { momentId: activeMoment.id } : {}),
+      }),
   });
   const saved = useQuery({
     queryKey: ["ghostxi", "scenarios", matchId],
@@ -278,7 +287,7 @@ function ConnectedLab() {
     if (document.fullscreenElement) void document.exitFullscreen();
     else void field.current?.requestFullscreen().catch((e) => setError(e.message));
   };
-  const clock = start + time;
+  const clock = source?.matchTimeSec ?? start + time + (frames[0]?.period === 2 ? 2700 : 0);
   const clockLabel = `${Math.floor(clock / 60)
     .toString()
     .padStart(2, "0")}:${Math.floor(clock % 60)
@@ -409,18 +418,22 @@ function ConnectedLab() {
         </span>
         <div className="flex items-center gap-3">
           <span className="grid size-8 place-items-center rounded-md bg-home font-display text-sm font-bold">
-            HOM
+            {match.teams[0]?.name.slice(0, 3).toUpperCase()}
           </span>
           <span className="hidden font-semibold sm:inline">{match.teams[0]?.name}</span>
           <span
             className="rounded-md bg-background px-3 py-1 font-mono text-2xl font-bold tabular"
-            title="Score unavailable in the source"
+            title={
+              match.score ? "Final score from source metadata" : "Score unavailable in the source"
+            }
           >
-            —<span className="mx-2 text-muted-foreground">:</span>—
+            {match.score?.home ?? "—"}
+            <span className="mx-2 text-muted-foreground">:</span>
+            {match.score?.away ?? "—"}
           </span>
           <span className="hidden font-semibold sm:inline">{match.teams[1]?.name}</span>
           <span className="grid size-8 place-items-center rounded-md bg-away font-display text-sm font-bold">
-            AWY
+            {match.teams[1]?.name.slice(0, 3).toUpperCase()}
           </span>
         </div>
         <span className="rounded-md bg-primary/15 px-2.5 py-1 font-mono text-lg text-primary tabular">
@@ -430,7 +443,10 @@ function ConnectedLab() {
           {[
             ["Tracking", `${match.fps} Hz`],
             ["Source windows", String(match.coverage.segments.length)],
-            ["Players", String(match.players.length)],
+            [
+              "On pitch",
+              String(frames[0] ? Object.values(frames[0].players).filter(Boolean).length : 22),
+            ],
           ].map(([k, v]) => (
             <div key={k}>
               <div className="text-eyebrow">{k}</div>
@@ -438,14 +454,26 @@ function ConnectedLab() {
             </div>
           ))}
         </div>
-        <DataBadge kind="observed" />
+        <DataBadge kind={source?.dataStatus === "ESTIMATED" ? "estimated" : "observed"} />
       </div>
+      {match.provider === "skillcorner" && (
+        <p className="rounded-lg border bg-card p-3 text-xs text-muted-foreground">
+          {match.competition} · {match.season} · {match.date} · {match.venue} · Full-time score
+          shown. Solid player outlines: detected; dashed outlines: source-extrapolated. Current
+          frame: {String(source?.quality["detectedPlayers"] ?? "—")} detected,{" "}
+          {String(source?.quality["extrapolatedPlayers"] ?? "—")} extrapolated; ball{" "}
+          {source?.ballProvenance === "OBSERVED" ? "detected" : "extrapolated"}.
+        </p>
+      )}
       <div className="grid items-start gap-4 xl:grid-cols-[260px_minmax(0,1fr)_310px]">
         <Panel title="Squad & Substitutions" className="order-2 xl:order-1">
           <div className="mb-3 rounded-lg border border-accent/40 bg-accent/5 p-3">
             <div className="flex items-center justify-between">
               <span className="font-display text-lg font-bold">
-                #{playerId.replace("Player", "")} {selected?.name}
+                #
+                {selected?.jerseyNumber ??
+                  (match.provider === "metrica" ? playerId.replace("Player", "") : "—")}{" "}
+                {selected?.name}
               </span>
               <span className="rounded bg-background px-1.5 py-0.5 font-mono text-xs">
                 {selected?.position ?? "Unknown role"}
@@ -488,7 +516,13 @@ function ConnectedLab() {
             <TabsContent value="xi" className="mt-2">
               <ul className="space-y-1">
                 {match.players
-                  .filter((p) => p.teamId === teamId)
+                  .filter(
+                    (p) =>
+                      p.teamId === teamId &&
+                      (frames[0]
+                        ? frames[0].players[p.id] !== null
+                        : match.coverage.segments[0]?.playerIds.includes(p.id)),
+                  )
                   .map((p) => (
                     <li key={p.id}>
                       <button
@@ -501,7 +535,8 @@ function ConnectedLab() {
                         )}
                       >
                         <span className="w-6 font-mono text-xs text-muted-foreground">
-                          {p.id.replace("Player", "")}
+                          {p.jerseyNumber ??
+                            (match.provider === "metrica" ? p.id.replace("Player", "") : "—")}
                         </span>
                         <span className="flex-1">{p.name}</span>
                         <span className="font-mono text-[10px] text-muted-foreground">
@@ -725,11 +760,11 @@ function ConnectedLab() {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/60 bg-background/40 px-4 py-2 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <span className="size-2.5 rounded-full bg-home" />
-                HOM
+                {match.teams[0]?.name.slice(0, 3).toUpperCase()}
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="size-2.5 rounded-full bg-away" />
-                AWY
+                {match.teams[1]?.name.slice(0, 3).toUpperCase()}
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="size-2.5 rounded-full border-2 border-warning" />
@@ -740,7 +775,7 @@ function ConnectedLab() {
                 Ghost
               </span>
               <span className="ml-auto flex gap-1.5">
-                <DataBadge kind="observed" />
+                <DataBadge kind={source?.dataStatus === "ESTIMATED" ? "estimated" : "observed"} />
                 {result && <DataBadge kind="simulated" />}
               </span>
             </div>
@@ -874,7 +909,11 @@ function ConnectedLab() {
         </div>
         <div className="order-3 space-y-4">
           <Panel
-            title="Recommended Moments to Test"
+            title={
+              match.provider === "skillcorner"
+                ? "Source actions to review"
+                : "Recommended Moments to Test"
+            }
             info="Moments are ranked using synchronized source events and tracking."
           >
             <p className="mb-3 text-xs text-muted-foreground">For {selected?.name}</p>
@@ -892,7 +931,10 @@ function ConnectedLab() {
                       {Math.floor(m.timeSec / 60)}:
                       {String(Math.floor(m.timeSec % 60)).padStart(2, "0")}
                     </span>
-                    <span className="text-muted-foreground">Δ {m.momentumDelta.toFixed(3)}</span>
+                    <span className="text-muted-foreground">
+                      {match.provider === "skillcorner" ? "EPV" : "Δ"}{" "}
+                      {m.momentumDelta?.toFixed(3) ?? "Unavailable"}
+                    </span>
                   </div>
                   <p className="mt-1 text-sm font-semibold">{m.title}</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">{m.description}</p>
@@ -934,13 +976,19 @@ function ConnectedLab() {
               ))}
             </div>
             <p className="mt-3 text-[11px] text-muted-foreground">
-              Source profiles are independent of the anonymous recording. Physical traits remain
-              unavailable.
+              Profiles are separate from the recorded trajectories. Unmeasured physical traits
+              remain unavailable.
             </p>
           </Panel>
         </div>
       </div>
-      <Panel title="Match Timeline · Momentum Swings">
+      <Panel
+        title={
+          match.provider === "skillcorner"
+            ? "Source action timeline"
+            : "Match Timeline · Momentum Swings"
+        }
+      >
         <div className="flex flex-wrap gap-2">
           {moments.data?.map((m) => (
             <Button

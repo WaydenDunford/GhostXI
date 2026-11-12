@@ -69,8 +69,9 @@ export function SourcePitch({
   }
   const players: PitchPlayer[] = match.players.map((p) => ({
     id: p.id,
-    num: Number(p.id.replace("Player", "")) || match.players.indexOf(p) + 1,
-    label: p.name,
+    num: p.jerseyNumber ?? (match.provider === "metrica" ? Number(p.id.replace("Player", "")) : 0),
+    estimated: source?.playerProvenance?.[p.id] === "ESTIMATED",
+    label: p.shortName ?? p.name,
     team: p.teamId === match.teams[0]?.id ? "home" : "away",
     frames: [],
     ...(swaps.some((r) => r.originalPlayerId === p.id)

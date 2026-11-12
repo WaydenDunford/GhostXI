@@ -205,7 +205,7 @@ export interface GhostXIClient {
     options?: RequestOptions,
   ): Promise<RecommendedMoment[]>;
   getReplacementCandidates(
-    query: { matchId: string; replacePlayerId: string },
+    query: { matchId: string; replacePlayerId: string; momentId?: string },
     options?: RequestOptions,
   ): Promise<ReplacementCandidate[]>;
   getRecommendationConfig(options?: RequestOptions): Promise<RecommendationConfig>;
@@ -561,7 +561,7 @@ export interface RecommendedMoment {
   timeSec: number;
   title: string;
   description: string;
-  momentumDelta: number;
+  momentumDelta: number | null; elapsedTimeSec?: number; teamId?: string;
   relevanceScore: number;
   relevanceReasons: string[];
   position: string;
@@ -605,6 +605,8 @@ export interface MultiGhostScenario {
 }
 export type SavedSimulationScenario = SimulationScenario | MultiGhostScenario;
 export interface TrackingFrame {
+  playerProvenance?: Record<string, "OBSERVED" | "ESTIMATED" | null>;
+  ballProvenance?: "OBSERVED" | "ESTIMATED";
   sourceFrame: number;
   period: number;
   periodTimeSec: number;
@@ -633,6 +635,8 @@ export interface TrackingCoverage {
   bosniaBlocked: boolean;
 }
 export interface VerifiedReplayPlayer {
+  jerseyNumber?: number | null;
+  shortName?: string;
   id: string;
   providerId: string;
   name: string;
@@ -650,7 +654,8 @@ export interface ReplayMatch {
   name: string;
   date: string | null;
   teams: { id: string; providerId: string; name: string }[];
-  score: unknown | null;
+  score: { home: number; away: number } | null;
+  competition?: string | null; season?: string | null; venue?: string | null;
   pitch: { length: number; width: number };
   fps: number;
   playable: true;

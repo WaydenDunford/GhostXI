@@ -53,6 +53,7 @@ export type CoachBriefing = {
 };
 
 export type SportDataset = {
+  momentumMethod?: string;
   id: SportId;
   demo: boolean;
   match: Omit<typeof fbMatch, "home" | "away"> & {

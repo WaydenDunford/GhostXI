@@ -7,6 +7,7 @@ import { createBehaviorService } from "./behavior.js";
 import { createVerifiedReplayService } from "./verified-replay.js";
 import { createScenarioStore } from "./scenario-store.js";
 import { fileURLToPath } from "node:url";
+import { normalizeSkillCorner } from "../src/data/skillcorner.js";
 
 const copy = (value) => structuredClone(value);
 const freeze = (value) => {
@@ -17,7 +18,7 @@ const freeze = (value) => {
   return value;
 };
 
-export function createFootballService({ recording, grid, external = null, behavior = null, scenarioStore, pff = [], pffErrors = [] }) {
+export function createFootballService({ recording, grid, external = null, behavior = null, scenarioStore, pff = [], pffErrors = [], skillcorner = [], trackingErrors = [] }) {
   const match = freeze(validateMatch({ ...copy(recording), players: [...copy(recording.players), ...copy(replacementProfiles)] }));
   const possessionValue = createPossessionValue(grid, match.pitch);
   const momentum = buildMomentum(match, possessionValue);
@@ -56,10 +57,11 @@ export function createFootballService({ recording, grid, external = null, behavi
   }
   const summary = () => ({ id: match.id, name: match.name, dataKind: match.dataKind, pitch: match.pitch,
     scenarioCount: match.moments.length, candidateCount: replacementProfiles.length, source: match.source });
+  const replayService = createVerifiedReplayService({ recording, external, behavior, possessionValue, pff, pffErrors, skillcorner, trackingErrors, ...(scenarioStore ? { store: scenarioStore } : {}) });
   return {
     ...createExternalService(external),
     ...createBehaviorService({ match, model: behavior }),
-    ...createVerifiedReplayService({ recording, external, behavior, possessionValue, pff, pffErrors, ...(scenarioStore ? { store: scenarioStore } : {}) }),
+    ...replayService,
     listMatches: () => copy([summary()]),
     getMatch(matchId) {
       requireMatch(matchId);
@@ -75,6 +77,7 @@ export function createFootballService({ recording, grid, external = null, behavi
       return copy(replacementProfiles.filter(({ id }) => eligible.includes(id)).map((profile) => ({ ...profile, dataKind: "ASSUMED" })));
     },
     getMomentum(matchId) {
+      if (matchId !== match.id) return replayService.getReplayMomentum(matchId);
       requireMatch(matchId);
       return copy({ matchId, points: momentum, methodology: methodology.momentum, provenance: provenance.events,
         eventsUsed: match.events.length, coverage: "recorded event locations; tracking exists only for the three clips" });
@@ -126,5 +129,16 @@ export async function loadFootballService({ scenarioFile = process.env.GHOSTXI_S
       pff.push(value);
     } catch (error) { pffErrors.push({ file, reason: error.message }); }
   }
-  return createFootballService({ recording, grid, external, behavior, pff, pffErrors, scenarioStore: createScenarioStore({ filePath: scenarioFile }) });
+  const skillcorner = [], trackingErrors = [];
+  const skillcornerDirectory = new URL("../src/data/skillcorner/replays/", import.meta.url);
+  let trackingFiles = [];
+  try { trackingFiles = await readdir(skillcornerDirectory); } catch (error) { if (error.code !== "ENOENT") throw error; }
+  for (const file of trackingFiles.filter((file) => /^\d+\.json$/.test(file))) {
+    try {
+      const value = normalizeSkillCorner(JSON.parse(await readFile(new URL(file, skillcornerDirectory), "utf8")));
+      if (value.id !== `skillcorner:${file.slice(0, -5)}`) throw new Error("SkillCorner filename/source identity mismatch.");
+      skillcorner.push(value);
+    } catch (error) { trackingErrors.push({ file, reason: error.message }); }
+  }
+  return createFootballService({ recording, grid, external, behavior, pff, pffErrors, skillcorner, trackingErrors, scenarioStore: createScenarioStore({ filePath: scenarioFile }) });
 }

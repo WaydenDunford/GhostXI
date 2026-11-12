@@ -81,7 +81,7 @@ export interface GhostXIClient {
   getMatches(options?: RequestOptions): Promise<MatchSummary[]>;
   getLineup(matchId: string, options?: RequestOptions): Promise<SubstitutionLineup>;
   getRecommendedMoments(matchId: string, query: { playerId: string; limit?: number; position?: string }, options?: RequestOptions): Promise<RecommendedMoment[]>;
-  getReplacementCandidates(query: { matchId: string; replacePlayerId: string }, options?: RequestOptions): Promise<ReplacementCandidate[]>;
+  getReplacementCandidates(query: { matchId: string; replacePlayerId: string; momentId?: string }, options?: RequestOptions): Promise<ReplacementCandidate[]>;
   getRecommendationConfig(options?: RequestOptions): Promise<RecommendationConfig>;
   listSavedScenarios(query?: { matchId?: string; candidateId?: string }, options?: RequestOptions): Promise<SavedSimulationScenario[]>;
   getSavedScenario(id: string, options?: RequestOptions): Promise<SavedSimulationScenario>;
@@ -209,7 +209,7 @@ export interface BehaviorModel {
 /** Shared substitution contract: all frame coordinates below are 0–100, not metres. */
 export interface RecommendedMoment {
   id: string; matchId: string; timeSec: number; title: string; description: string;
-  momentumDelta: number; relevanceScore: number; relevanceReasons: string[];
+  momentumDelta: number | null; elapsedTimeSec?: number; teamId?: string; relevanceScore: number; relevanceReasons: string[];
   position: string; dataStatus: "observed" | "estimated" | "simulated"; dataCoverage: number;
 }
 export interface ReplacementCandidate {
@@ -229,6 +229,7 @@ export interface MultiGhostScenario {
 }
 export type SavedSimulationScenario = SimulationScenario | MultiGhostScenario;
 export interface TrackingFrame {
+  playerProvenance?: Record<string, "OBSERVED" | "ESTIMATED" | null>; ballProvenance?: "OBSERVED" | "ESTIMATED";
   sourceFrame: number; period: number; periodTimeSec: number; matchTimeSec?: number | null; videoTimeSec?: number | null;
   dataStatus: "OBSERVED" | "ESTIMATED"; ball: Point | null; players: Record<string, Point | null>; quality: Record<string, unknown>;
 }
@@ -238,12 +239,14 @@ export interface TrackingCoverage {
   gaps: {period: number; fromSec: number; toSec: number}[]; bosniaBlocked: boolean;
 }
 export interface VerifiedReplayPlayer {
+  jerseyNumber?: number | null; shortName?: string;
   id: string; providerId: string; name: string; position: string | null; secondaryPositions: string[];
   teamId: string; source: string; isStarter: boolean | null; dateOfBirth: string | null;
 }
 export interface ReplayMatch {
   id: string; provider: string; providerId: string; name: string; date: string | null;
-  teams: {id: string; providerId: string; name: string}[]; score: unknown | null;
+  teams: {id: string; providerId: string; name: string}[]; score: { home: number; away: number } | null;
+  competition?: string | null; season?: string | null; venue?: string | null;
   pitch: {length: number; width: number}; fps: number; playable: true;
   trackingStatus: string[]; coverage: TrackingCoverage; source: {name: string; url: string; [key: string]: unknown}; limitations: string[];
 }

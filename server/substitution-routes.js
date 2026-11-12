@@ -42,7 +42,7 @@ export async function handleSubstitutionRequest({ request, response, url, params
     response.setHeader("Allow", [...methods, "OPTIONS"].join(", "));
     throw new DomainError("This HTTP method is unavailable for the scenario route.", "METHOD_NOT_ALLOWED", 405);
   }
-  const allowedQuery = moments ? ["playerId", "limit", "position"] : tracking ? ["momentId", "period", "fromSec", "toSec", "offset", "limit"] : candidates ? ["matchId", "replacePlayerId"]
+  const allowedQuery = moments ? ["playerId", "limit", "position"] : tracking ? ["momentId", "period", "fromSec", "toSec", "offset", "limit"] : candidates ? ["matchId", "replacePlayerId", "momentId"]
     : scouting ? ["candidateId", "matchId"] : collection && request.method === "GET" ? ["matchId", "candidateId"] : [];
   requireValue([...url.searchParams.keys()].every((key) => allowedQuery.includes(key) && url.searchParams.getAll(key).length === 1), "Unknown or repeated query parameter.");
   const query = Object.fromEntries(url.searchParams);

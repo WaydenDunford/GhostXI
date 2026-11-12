@@ -17,6 +17,7 @@
     "check:frontend": "npm run typecheck --prefix frontend",
     "build:legacy": "node scripts/build.js",
     "prepare:scouting": "node scripts/prepare-scouting.js",
+    "prepare:tracking": "python scripts/prepare-skillcorner.py",
     "report:candidates": "node scripts/report-candidates.js"
   },
   "engines": {

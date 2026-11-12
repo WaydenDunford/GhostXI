@@ -27,7 +27,9 @@ function TrackingFootballPresentation({ children }: { children: ReactNode }) {
   const { match, matchId, selection, catalog } = useBackend();
   const enabled = sport === "football" && !!match;
   const playerId =
-    match?.players.find((p) => p.id === "Player2")?.id ?? match?.players[0]?.id ?? "";
+    match?.players.find((p) => p.id === "Player2")?.id ??
+    match?.coverage.segments[0]?.playerIds[0] ??
+    "";
   const candidates = useQuery({
     queryKey: ["ghostxi", "presentation-candidates", matchId],
     queryFn: () => ghostxi.getReplacementCandidates({ matchId, replacePlayerId: playerId }),
@@ -172,12 +174,16 @@ function TrackingFootballPresentation({ children }: { children: ReactNode }) {
   const dataMoments = moments.data.map((m, i) => ({
     id: i + 1,
     backendId: m.id,
+    elapsedMinute: (m.elapsedTimeSec ?? m.timeSec) / 60,
     minute: m.timeSec / 60,
     title: m.title,
-    team: "home" as const,
+    team: m.teamId === match.teams[1]?.id ? ("away" as const) : ("home" as const),
     type: "Source event",
-    impact: Math.round(m.momentumDelta * 1000) / 10,
+    impact: Math.round((m.momentumDelta ?? 0) * 1000) / 10,
     kind: m.dataStatus,
+    ...(match.provider === "skillcorner"
+      ? { impactLabel: `EPV ${m.momentumDelta?.toFixed(3) ?? "—"}` }
+      : {}),
     description: m.description,
   }));
   const sourceOriginalId = selection
@@ -197,14 +203,25 @@ function TrackingFootballPresentation({ children }: { children: ReactNode }) {
   const dataset: SportDataset = {
     id: "football",
     demo: false,
+    ...(match.provider === "skillcorner" ? { momentumMethod: momentum.data.methodology } : {}),
     match: {
       id: match.id,
-      competition: match.name,
+      competition: match.competition ? `${match.competition} · ${match.season}` : match.name,
       date: match.date ?? "Date unavailable",
-      venue: match.source.name,
+      venue: match.venue ?? match.source.name,
       attendance: "Source tracking",
-      home: { name: match.teams[0]!.name, short: "HOM", score: null, formation: "Unavailable" },
-      away: { name: match.teams[1]!.name, short: "AWY", score: null, formation: "Unavailable" },
+      home: {
+        name: match.teams[0]!.name,
+        short: match.teams[0]!.name.slice(0, 3).toUpperCase(),
+        score: match.score?.home ?? null,
+        formation: "Unavailable",
+      },
+      away: {
+        name: match.teams[1]!.name,
+        short: match.teams[1]!.name.slice(0, 3).toUpperCase(),
+        score: match.score?.away ?? null,
+        formation: "Unavailable",
+      },
       coverage: 1,
     },
     moments: dataMoments,
@@ -225,7 +242,8 @@ function TrackingFootballPresentation({ children }: { children: ReactNode }) {
       })),
     fieldPlayers: match.players.map((p) => ({
       id: p.id,
-      num: Number(p.id.replace("Player", "")),
+      num:
+        p.jerseyNumber ?? (match.provider === "metrica" ? Number(p.id.replace("Player", "")) : 0),
       label: p.name,
       team: p.teamId === match.teams[0]!.id ? "home" : "away",
       frames: [],
@@ -266,7 +284,10 @@ function TrackingFootballPresentation({ children }: { children: ReactNode }) {
       {
         label: "Recorded events",
         value: String(momentum.data.eventsUsed),
-        sub: "Same-match pass/shot locations",
+        sub:
+          match.provider === "skillcorner"
+            ? "Source possession EPV events"
+            : "Same-match pass/shot locations",
         tone: "text-success",
       },
       {
@@ -298,7 +319,10 @@ function TrackingFootballPresentation({ children }: { children: ReactNode }) {
         ? `${findings.length} calculated findings from ${result.branches.length} modeled branches. ${result.explanations[0] ?? ""}`
         : "Run a ghost simulation in Match Lab to populate this briefing from the backend.",
       observations: result?.explanations ?? match.limitations,
-      original: "Original player and ball coordinates come from the recorded source frames.",
+      original:
+        match.provider === "skillcorner"
+          ? "Original source frames contain detected and provider-extrapolated positions, each labeled separately."
+          : "Original player and ball coordinates come from the recorded source frames.",
       ghost: result
         ? "Alternative movement follows explicit shared model parameters."
         : "No alternative branch has been run yet.",

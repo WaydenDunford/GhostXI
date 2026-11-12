@@ -76,12 +76,13 @@ const ALL = "all";
 
 function MatchLab() {
   const { sport } = useSport();
+  const { moment } = Route.useSearch();
   const { sourceMode, eventId } = useBackend();
   return sport === "football" ? (
     sourceMode === "events" ? (
       <EventMatchLab key={eventId} />
     ) : (
-      <VerifiedLab />
+      <VerifiedLab momentIndex={moment} />
     )
   ) : (
     <GenericLab />

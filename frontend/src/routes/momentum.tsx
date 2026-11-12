@@ -41,12 +41,13 @@ function MomentumView() {
   const { config, dataset } = useSport();
   const { sourceMode } = useBackend();
   const eventMode = config.id === "football" && sourceMode === "events";
+  const sourceEpv = dataset.momentumMethod?.startsWith("SkillCorner");
   const { moments, momentumSeries, match } = dataset;
   const top = [...moments].sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact)).slice(0, 10);
   return (
     <div className="space-y-4">
       <PageHeader
-        eyebrow={`Match Momentum · ${config.momentumStrategy.label}`}
+        eyebrow={`Match Momentum · ${sourceEpv ? "Source possession EPV" : config.momentumStrategy.label}`}
         title="Momentum Analysis"
       >
         {dataset.demo ? <DemoBadge /> : <DataBadge kind="observed" />}
@@ -66,7 +67,7 @@ function MomentumView() {
         action={
           <div className="flex gap-2">
             <DataBadge kind="observed" />
-            {!eventMode && <DataBadge kind="simulated" />}
+            {momentumSeries.some((p) => p.ghost !== null) && <DataBadge kind="simulated" />}
           </div>
         }
       >
@@ -149,9 +150,9 @@ function MomentumView() {
           </ResponsiveContainer>
         </div>
       </Panel>
-      {eventMode && (
+      {dataset.momentumMethod && (
         <p className="text-xs text-muted-foreground">
-          {dataset.coach.observations[1]} Elapsed playing minutes include stoppage time.
+          {dataset.momentumMethod} Elapsed playing minutes include stoppage time.
         </p>
       )}
       {config.id === "football" && !eventMode && (
@@ -198,13 +199,13 @@ function MomentumView() {
                       m.impact > 0 ? "text-success" : "text-destructive",
                     )}
                   >
-                    {!eventMode &&
+                    {!m.impactLabel &&
                       (m.impact > 0 ? (
                         <ArrowUpRight className="size-4" />
                       ) : (
                         <ArrowDownRight className="size-4" />
                       ))}
-                    {eventMode ? m.impactLabel : `${m.impact > 0 ? "+" : ""}${m.impact}`}
+                    {m.impactLabel ?? `${m.impact > 0 ? "+" : ""}${m.impact}`}
                   </span>
                 </Link>
               </li>

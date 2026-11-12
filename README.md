@@ -59,7 +59,7 @@ PFF full requested-access data is not available. The actual public Kloppy excerp
 of Argentina-France 10517 successfully parses but lacks a continuous eligible replay
 window; it is not a playable World Cup match. StatsBomb's four finals remain available
 for real event analytics/profile evidence. Their former reconstructed replays are no
-longer active. Full SkillCorner/Wyscout tracking files have not been imported.
+longer active. SkillCorner named replay windows are available through the importer below; Wyscout files are not imported.
 The separate SkillCorner A-League aggregate workflow is described below. No
 unsupported Bosnia example is in the active catalog.
 
@@ -108,3 +108,13 @@ The Lovable frontend opens on real match events. Select a team and match in the 
 StatsBomb supplies recorded actor locations, pass/carry/shot endpoints, lineups and shot xG. The pitch steps through source events in actor-relative attacking coordinates; it does not infer other players’ locations or interpolate trajectories. Momentum uses trailing five one-minute xG bins, with period boundaries retained. Full-time score and match date remain visible. The report exports the selected match's normalized source data and calculation method.
 
 Choose **Metrica tracking** in the same selector for synchronized recorded movement and modeled ghost comparisons. Metrica Sample Game 1 is anonymous; its Home/Away identities cannot be mapped to Arsenal players. Event-only Arsenal matches are never passed into the tracking simulation. Raw downloaded data remains in ignored local caches; a fresh checkout needs `npm run prepare:external` before these matches are available.
+
+### Named tracking from May 2025
+
+Run `npm run prepare:tracking` to download the three pinned SkillCorner A-League Men matches in `config/skillcorner-sources.json` (17, 9 and 3 May 2025). Full tracking source files are kept under ignored `work/datasets/skillcorner/` and verified against their Git LFS SHA256 and byte length. The importer prepares five non-overlapping eight-second clips per match with a stable 11v11 lineup and available ball coordinates. It excludes wholly extrapolated windows and requires at least five detected players on average plus detected ball evidence. It does not invent, interpolate or clamp missing positions. Restart the API after preparation.
+
+The Lovable frontend opens **Tracking replays**, defaults to the newest available named match and supports team/match filters. It shows the source final score, historical date, stadium, actual player names and shirt numbers. Solid player outlines indicate detected coordinates; dashed outlines indicate provider extrapolation. Frame-level counts and ball provenance remain visible. Gaps and unimported intervals are unavailable. This is a historical 2024/25 sample, not a live 2026 feed.
+
+Original/ghost/overlay replay, source-aligned action cues, bench replacements and saved scenarios use the same verified backend. Candidate eligibility is evaluated against the selected clip's actual lineup. Ghost branches use shared explicit physical assumptions, not measured personalized abilities; all other source paths stay unchanged. The separate source momentum chart uses SkillCorner's model-derived possession EPV, signed by team and normalized by peak magnitude, with elapsed playing time including stoppage. It is not shot xG or a result prediction.
+
+Source and MIT license: https://github.com/SkillCorner/opendata. Normalized clip bundles, raw tracking and source license copies are kept in ignored `src/data/skillcorner/replays/`; a fresh checkout must run the importer. Arsenal/StatsBomb event matches and the anonymous Metrica source remain selectable.

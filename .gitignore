@@ -10,6 +10,7 @@ work/state/
 work/pff-venv/
 work/npm-cache/
 src/data/pff/
+src/data/skillcorner/replays/
 data/pff/
 dist/
 

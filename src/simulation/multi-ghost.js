@@ -22,7 +22,7 @@ export function simulateGhostBranch({ frames, replacements, pitch, anchors = {},
   const result = frames.map((frame, index) => {
     if (index > 0) {
       const dt = frame.time - frames[index - 1].time;
-      requireValue(dt > 0 && dt <= .1, "Cannot simulate through a tracking gap.");
+      requireValue(dt > 0 && dt <= .1 + 1e-8, "Cannot simulate through a tracking gap.");
       const next = new Map();
       for (const r of replacements) {
         const current = state.get(r.originalPlayerId);

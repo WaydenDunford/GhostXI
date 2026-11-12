@@ -586,7 +586,7 @@ export function SimulationField({
                 isOrig ? "stroke-warning" : !isGhost && "stroke-foreground/80",
               )}
               strokeWidth={isGhost || isOrig ? 0.4 : 0.18}
-              strokeDasharray={isGhost ? "0.7 0.35" : undefined}
+              strokeDasharray={isGhost ? "0.7 0.35" : p.estimated ? "0.35 0.3" : undefined}
             />
             <text
               y="0.05"

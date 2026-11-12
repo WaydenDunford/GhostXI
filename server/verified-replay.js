@@ -13,9 +13,9 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const round = (value) => Number(value.toFixed(6));
 const category = (n) => n >= 85 ? "Must-have candidate" : n >= 70 ? "Strong prospect" : n >= 50 ? "Possible fit" : "Low fit";
 
-export function createVerifiedReplayService({ recording, external, behavior, possessionValue, pff = [], pffErrors = [], store = createScenarioStore() }) {
+export function createVerifiedReplayService({ recording, external, behavior, possessionValue, pff = [], pffErrors = [], skillcorner = [], trackingErrors = [], store = createScenarioStore() }) {
   recording = clone(recording);
-  const all = [metricaReplay(recording), ...pff].map((value) => {
+  const all = [metricaReplay(recording), ...pff, ...skillcorner].map((value) => {
     try { return { ...clone(value), validation: validateReplay(value) }; }
     catch (error) { return { ...value, frames: [], validation: { playable: false, status: "failed", reason: error.message, frameCount: 0, segments: [] } }; }
   });
@@ -60,7 +60,8 @@ export function createVerifiedReplayService({ recording, external, behavior, pos
     return { id: match.id, provider: match.provider, providerId: match.providerId, name: match.name, date: match.date,
       teams: match.teams, score: match.score, pitch: match.pitch, fps: match.fps,
       playable: true, trackingStatus: [...new Set(match.frames.map((f) => f.dataStatus))],
-      coverage: match.validation, source: match.source, limitations: match.limitations };
+      coverage: match.validation, source: match.source, limitations: match.limitations,
+      competition: match.competition ?? null, season: match.season ?? null, venue: match.venue ?? null };
   }
   function moments(match, selectedId, limit = 5, position) {
     requireValue(Number.isInteger(limit) && limit >= 1 && limit <= 10, "limit must be an integer from 1 to 10.");
@@ -71,6 +72,20 @@ export function createVerifiedReplayService({ recording, external, behavior, pos
       return rankPlayerMoments({ matchId: match.id, playerId: id, position: position ?? player(match, id).position,
         windows: metricaContext.windows(id), limit: Math.min(limit, 5) });
     }
+    if (match.provider === "skillcorner") return match.events.filter((e) => e.aligned
+      && (!selectedId || match.frames.find((f) => f.sourceFrame === e.sourceFrame)?.players[selectedId]))
+      .sort((a,b) => a.matchTimeSec - b.matchTimeSec).slice(0, limit).map((e) => {
+        const frame = match.frames.find((f) => f.sourceFrame === e.sourceFrame);
+        return { id: `event:${e.id}`, matchId: match.id, timeSec: e.matchTimeSec, elapsedTimeSec: e.elapsedSeconds, teamId: e.teamId,
+          title: `${e.type} · ${e.playerName}`,
+          description: `${e.playerName}: source ${e.endType || "possession"} at ${Math.floor(e.matchTimeSec / 60)}:${String(Math.floor(e.matchTimeSec % 60)).padStart(2, "0")}. Eight seconds of same-match tracking; detected and extrapolated positions are labeled.`,
+          momentumDelta: e.epvTotal, relevanceScore: 0, position: selectedId ? player(match, selectedId).position ?? "unknown" : "unknown",
+          relevanceReasons: ["Source action cues listed chronologically, not a calibrated tactical ranking.",
+            e.playerId === selectedId ? "Selected player is the source action actor." : "Selected player is present in this source window.",
+            "EPV is the provider's model-derived possession value; it is separate from the ghost comparison."],
+          dataStatus: match.frames.filter((f) => f.period === frame.period && f.periodTimeSec >= frame.periodTimeSec && f.periodTimeSec <= frame.periodTimeSec + 8).some((f) => f.dataStatus === "ESTIMATED") ? "estimated" : "observed",
+          dataCoverage: 1 };
+      });
     // PFF semantic event schemas must be explicitly mapped/aligned before ranking.
     // Imported markers/events remain available as evidence; unknown semantics do
     // not become a fabricated momentum series or invented tactical opportunity.
@@ -103,7 +118,11 @@ export function createVerifiedReplayService({ recording, external, behavior, pos
     }).filter((p) => p.positionFit === null || p.positionFit >= .55)
       .sort((a, b) => (b.positionFit ?? .3) - (a.positionFit ?? .3) || b.dataCoverage - a.dataCoverage || a.id.localeCompare(b.id));
   }
-  function publicCandidates(matchId, originalId) { return clone(candidateDetails(requireMatch(matchId), originalId)); }
+  function publicCandidates(matchId, originalId, momentId) {
+    const match = requireMatch(matchId);
+    const activeIds = momentId ? Object.keys(windowFor(match, momentId).frames[0].players) : undefined;
+    return clone(candidateDetails(match, originalId, activeIds));
+  }
   function windowFor(match, momentId) {
     if (match.provider === "metrica") {
       const window = recording.moments.find((m) => m.id === momentId);
@@ -121,7 +140,7 @@ export function createVerifiedReplayService({ recording, external, behavior, pos
     const metres = (p) => ({ x: p.x / 100 * match.pitch.length, y: p.y / 100 * match.pitch.width });
     return { frames: chosen.map((f) => ({ time: f.periodTimeSec - chosen[0].periodTimeSec, sourceFrame: f.sourceFrame,
       ball: metres(f.ball), players: Object.fromEntries(Object.entries(f.players).filter(([, p]) => p !== null).map(([id, p]) => [id, metres(p)])) })),
-      period: event.period, timeSec: chosen[0].periodTimeSec, cueTimeSec: 0, anchors: {}, sourceStatus: "ESTIMATED" };
+      period: event.period, timeSec: chosen[0].periodTimeSec, cueTimeSec: 0, anchors: {}, sourceStatus: chosen.some((f) => f.dataStatus === "ESTIMATED") ? "ESTIMATED" : "OBSERVED" };
   }
   function validateScenario(input) {
     requireValue(input && typeof input === "object" && !Array.isArray(input), "Scenario must be an object.");
@@ -200,6 +219,17 @@ export function createVerifiedReplayService({ recording, external, behavior, pos
   const mutable = (row) => { const { id, ...input } = row; return input; };
   return {
     getRecommendationConfig: () => clone({ ...footballRecommendation, modeledPhysical: modeledMovement }),
+    getReplayMomentum(id) {
+      const m = requireMatch(id);
+      requireValue(m.provider === "skillcorner", "Source possession EPV is unavailable for this tracking provider.");
+      const events = m.events.filter((e) => e.epvTotal !== null);
+      const peak = Math.max(...events.map((e) => Math.abs(e.epvTotal)), .000001);
+      return { matchId: id, eventsUsed: events.length,
+        points: events.map((e) => ({ minute: e.elapsedSeconds / 60, value: (e.teamId === m.teams[0].id ? 1 : -1) * e.epvTotal / peak })),
+        methodology: "SkillCorner possession_epv_total, signed Home minus Away and normalized by the largest absolute possession value. Provider model outputs, not xG or a result prediction.",
+        coverage: "Source possession events across the match; tracking replay is limited to imported windows.",
+        provenance: { kind: "DERIVED", source: m.source.url, revision: m.source.revision } };
+    },
     listReplayMatches: () => [...catalog.values()].map(summary),
     getReplayMatch: (id) => ({ ...summary(requireMatch(id)), players: clone(requireMatch(id).players),
       historicalSubstitutions: [...requireMatch(id).events, ...(requireMatch(id).trackingMarkers ?? [])].filter((e) => e.type === "SUB" || e.type === "Substitution"),
@@ -229,14 +259,14 @@ export function createVerifiedReplayService({ recording, external, behavior, pos
       for (const raw of external?.statsbomb?.matches ?? []) providers.push({ provider: "statsbomb", matchIdentifier: `statsbomb:${raw.metadata.match_id}`,
         tracking: { available: false }, events: { available: true, synchronized: false }, rosters: { available: true }, playerProfileCoverage: "source events and curated market links",
         accessibility: "local_files_available", validationStatus: "validated_event_only", playable: false, limitations: ["Event-only data cannot supply a real tracking replay."] });
-      for (const provider of ["skillcorner", "wyscout"]) providers.push({ provider, matchIdentifier: null, tracking: { available: false }, events: { available: false },
+      for (const provider of ["skillcorner", "wyscout"].filter((provider) => !all.some((m) => m.provider === provider))) providers.push({ provider, matchIdentifier: null, tracking: { available: false }, events: { available: false },
         rosters: { available: false }, playerProfileCoverage: "none imported", accessibility: "files_not_imported", validationStatus: "adapter_available_in_pitchkit_only", playable: false });
-      return { verifiedDataOnly: true, providers, importErrors: pffErrors, policy: "No reconstructed source positions, name-only identity joins or unsupported Bosnia scenarios in the replay catalog." };
+      return { verifiedDataOnly: true, providers, importErrors: [...pffErrors, ...trackingErrors], policy: "Source identity verified; provider-extrapolated tracking is explicitly labeled. No invented identities or unsupported Bosnia scenarios." };
     },
     getSubstitutionLineup(id) { const m = requireMatch(id); return { matchId: id, sportId: "football", players: clone(m.players).map((p) => ({ ...p,
       position: p.position ?? "unknown", isBench: p.isStarter === false, dataStatus: "OBSERVED" })), source: m.source }; },
     getRecommendedMoments: (id, { playerId, limit = 5, position } = {}) => moments(requireMatch(id), playerId, limit, position),
-    getReplacementCandidates: ({ matchId, replacePlayerId }) => publicCandidates(matchId, replacePlayerId),
+    getReplacementCandidates: ({ matchId, replacePlayerId, momentId }) => publicCandidates(matchId, replacePlayerId, momentId),
     listSavedScenarios: async () => (await store.list()).filter((row) => { try { validateScenario(mutable(row)); return true; } catch { return false; } }),
     async getSavedScenario(id) { const row = await store.get(id); validateScenario(mutable(row)); return row; },
     createSavedScenario(input) { validateScenario(input); return store.create(input); },
@@ -270,11 +300,11 @@ export function createVerifiedReplayService({ recording, external, behavior, pos
         scenarioIds: selectedRows.map((r) => r.scenario.id), teamFitScore: score, category: category(score), recruitmentPriority: "Gather more evidence", confidence: "low",
         components: { positionalSuitability: position, historicalActionContribution: null, teamPlayingStyleFit: null, simulatedContribution: simulated, dataCoverage: coverage },
         strengths: ["Verified candidate identity and source profile; simulated geometric contribution is reported separately."],
-        weaknesses: ["Team tactical fit and calibrated position-specific ability are unverified; historical anonymous tracking cannot establish a named player's ability."],
+        weaknesses: ["Team tactical fit and calibrated position-specific ability are unverified; geometric replay branches cannot establish personalized ability."],
         methodology: "Provisional geometric review proxy: role 30%, simulation 50%, coverage 20%; unknown role is excluded and weights renormalized. Evidence cap 69." };
       });
       return { candidateId, overallScore: groups.length === 1 ? groups[0].teamFitScore : null, groups,
-        limitation: "No prediction of transfer success. Anonymous source tracking and named counterfactual identities remain separate." };
+        limitation: "No prediction of transfer success. Recorded source identities and counterfactual candidate identities remain separate." };
     },
   };
 }

@@ -114,7 +114,7 @@ test("HTTP acceptance: verified catalog -> two replacements -> saved/reopened in
   server.listen(0,"127.0.0.1"); await once(server,"listening"); const origin=`http://127.0.0.1:${server.address().port}`;
   const api=createGhostXIClient({baseUrl:origin+"/api/v1"});
   try {
-    const matches=await api.getReplayMatches(); assert.deepEqual(matches.map((m)=>m.id),["metrica-game-1"]);
+    const matches=await api.getReplayMatches(); assert.ok(matches.some((m)=>m.id === "metrica-game-1")); assert.ok(matches.every((m)=>m.playable));
     const status=await api.getDatasetStatus(); assert.equal(status.verifiedDataOnly,true);
     const modelConfig=await api.getRecommendationConfig(); assert.equal(modelConfig.modeledPhysical.maxSpeedMps,5.4);
     assert.ok(status.providers.some((p)=>p.provider==="pff"&&!p.playable));

@@ -87,6 +87,7 @@ export function eventDataset(
   return {
     id: "football",
     demo: false,
+    momentumMethod: momentum.method,
     match: {
       id: match.id,
       competition: `${match.competition} · ${match.season}`,
@@ -166,7 +167,8 @@ export function eventDataset(
       body: `Final score ${match.home.score}–${match.away.score}. ${shots.length} recorded shots; xG ${momentum.totals.homeXG.toFixed(2)}–${momentum.totals.awayXG.toFixed(2)}.`,
       observations: [match.statsMethod, momentum.method],
       original: "Positions show the recorded actor and action endpoints in attacking coordinates.",
-      ghost: "This match has event data only. Use Metrica tracking to run a ghost scenario.",
+      ghost:
+        "This match has event data only. Choose Tracking replays to run a ghost scenario on available movement data.",
       wrong: "Events alone cannot establish off-ball positioning or individual defensive errors.",
       improved: "Select a recorded shot or pass in Match Lab to inspect its source details.",
       next: ["Review recorded shots", "Compare completed passes and recoveries"],
@@ -189,7 +191,7 @@ export function EventFootballPresentation({ children }: { children: ReactNode })
           Retry data connection
         </Button>
         <Button variant="outline" onClick={() => b.setSourceMode("tracking")}>
-          Open Metrica tracking
+          Open tracking replays
         </Button>
       </div>
     );

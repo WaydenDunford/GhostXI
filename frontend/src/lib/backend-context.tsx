@@ -8,7 +8,8 @@ import type { VerifiedSimulationResult, SavedSimulationScenario } from "./backen
 function useBackendState() {
   const { sport } = useSport();
   const [matchId, setMatchId] = useState("");
-  const [sourceMode, setSourceMode] = useState<"events" | "tracking">("events");
+  const [sourceMode, setSourceMode] = useState<"events" | "tracking">("tracking");
+  const [trackingTeam, setTrackingTeam] = useState("all");
   const [teamName, setTeamName] = useState("Arsenal");
   const [eventId, setEventId] = useState("");
   const eventCatalog = useQuery({
@@ -65,7 +66,12 @@ function useBackendState() {
     retry: false,
   });
   const matches = catalog.data?.state === "ok" ? catalog.data.replayMatches : [];
-  const activeId = matches.find((m) => m.id === matchId)?.id ?? matches[0]?.id ?? "";
+  const trackingTeams = [...new Set(matches.flatMap((m) => m.teams.map((t) => t.name)))].sort();
+  const trackingMatches = matches
+    .filter((m) => trackingTeam === "all" || m.teams.some((t) => t.name === trackingTeam))
+    .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+  const activeId =
+    trackingMatches.find((m) => m.id === matchId)?.id ?? trackingMatches[0]?.id ?? "";
   const detail = useQuery({
     queryKey: ["ghostxi", "match", activeId],
     queryFn: () => ghostxi.getReplayMatch(activeId),
@@ -96,12 +102,24 @@ function useBackendState() {
     eventPlayers,
     eventMomentum,
     eventActions,
+    trackingTeam,
+    trackingTeams,
+    trackingMatches,
+    setTrackingTeam: (team: string) => {
+      setTrackingTeam(team);
+      setMatchId("");
+      setSelection(null);
+    },
     catalog,
     matches,
     match: detail.data,
     detail,
     matchId: activeId,
-    setMatchId,
+    setMatchId: (id: string) => {
+      if (!trackingMatches.some((m) => m.id === id)) setTrackingTeam("all");
+      setMatchId(id);
+      setSelection(null);
+    },
     selection,
     setSelection,
   };

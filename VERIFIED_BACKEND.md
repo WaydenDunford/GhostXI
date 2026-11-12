@@ -36,11 +36,11 @@ unsupported saved scenarios are retained on disk but hidden and rejected on reru
 | PFF FC | Official Kloppy public parser excerpt of final 10517; 200 discontinuous broadcast frames, roster and metadata | No: insufficient continuous coverage and no delivered synchronized event file |
 | StatsBomb | Four finals: 3869685, 3943043, 3906390, 4020846; actual events/lineups | No tracking replay; original event analytics remain available |
 | Transfermarkt | 50,149 profiles; 656,301 dated valuations; six curated StatsBomb ID links | Profile enrichment, independently verified counterfactual identity data |
-| SkillCorner | Existing installed PitchKit loader capability; no source files imported | No |
+| SkillCorner | Three named A-League Men matches from May 2025; five stable 11v11 eight-second 10 Hz source windows each; per-player detection/extrapolation flags retained | Yes, imported windows only |
 | Wyscout | Existing installed PitchKit loader capability; no source files imported | No |
 
-SkillCorner/Wyscout were not completed integrations in this checkout. Their installed
-loader capability is preserved and the registry truthfully reports missing files.
+Wyscout remains unimported. SkillCorner now uses the pinned `npm run prepare:tracking` workflow described in README.md. The installed Wyscout
+loader capability is preserved and the registry truthfully reports its missing files.
 PFF requested-access files are still needed; see [PFF_IMPORT.md](PFF_IMPORT.md).
 The public test excerpt verifies parsing, not availability of a full World Cup replay.
 
@@ -201,3 +201,5 @@ Transfermarkt mirror tables use their documented CC0 distribution.
 [Kloppy uses BSD-3-Clause](https://github.com/PySport/kloppy/blob/a9651eba7c4dbbe2d2fc6d4cffb4aea63fadac11/LICENSE);
 that software license does not grant rights to the PFF requested dataset. PFF raw files and its
 test excerpt are not bundled for redistribution. This work activates no ProdReady scan.
+
+The current replay catalog includes the three named SkillCorner 2025 matches after `npm run prepare:tracking`. Source final scores, dates, names and shirts come from the same metadata files; source dynamic-event frame IDs align the clips. Provider-extrapolated coordinates remain ESTIMATED and are rendered with dashed player outlines. Ghost branches remain modeled. The older source audit above describes the initial slice, not the expanded current catalog.

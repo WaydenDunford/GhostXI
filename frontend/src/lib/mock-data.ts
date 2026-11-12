@@ -371,6 +371,7 @@ export const scenarios = [
 // Pitch coordinates in a 105x68 frame. Keyframes for the 68' sequence.
 type Pos = [number, number];
 export type PitchPlayer = {
+  estimated?: boolean;
   id: string;
   num: number;
   label: string;

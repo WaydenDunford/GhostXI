@@ -77,7 +77,12 @@ export function EventMatchLab() {
     setType("all");
     setPlayer("all");
     setPlaying(false);
-    setIndex(Math.max(0, events.findIndex((e) => e.id === id)));
+    setIndex(
+      Math.max(
+        0,
+        events.findIndex((e) => e.id === id),
+      ),
+    );
   };
   return (
     <div className="space-y-4">
@@ -327,8 +332,8 @@ export function EventMatchLab() {
           </div>
           <p className="text-xs text-muted-foreground">
             Recorded action locations · each team attacks to the right. Playback steps through
-            events; other players’ positions are unavailable. Full 22-player movement and ghost
-            simulations are available in the Metrica tracking source.
+            events; other players’ positions are unavailable. Choose Tracking replays for available
+            22-player movement windows and ghost simulations.
           </p>
           <Panel
             title={

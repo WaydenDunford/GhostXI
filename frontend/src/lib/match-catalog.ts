@@ -114,6 +114,7 @@ export async function loadCatalog(base = apiBase()): Promise<CatalogResult> {
       date: m.date ?? "Date unavailable",
       home: m.teams[0]?.name ?? "Home",
       away: m.teams[1]?.name ?? "Away",
+      ...(m.score ? { finalScore: { ...m.score, verified: true } } : {}),
       tracking: "validated",
       events: "validated",
       playerProfiles: "partial",
