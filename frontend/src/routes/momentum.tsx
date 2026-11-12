@@ -1,3 +1,4 @@
+import { useBackend } from "@/lib/backend-context";
 import { ConnectedMomentum } from "@/components/ghost/connected-pages";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
@@ -38,6 +39,8 @@ function Momentum() {
 
 function MomentumView() {
   const { config, dataset } = useSport();
+  const { sourceMode } = useBackend();
+  const eventMode = config.id === "football" && sourceMode === "events";
   const { moments, momentumSeries, match } = dataset;
   const top = [...moments].sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact)).slice(0, 10);
   return (
@@ -63,7 +66,7 @@ function MomentumView() {
         action={
           <div className="flex gap-2">
             <DataBadge kind="observed" />
-            <DataBadge kind="simulated" />
+            {!eventMode && <DataBadge kind="simulated" />}
           </div>
         }
       >
@@ -117,10 +120,25 @@ function MomentumView() {
               {moments.map((m) => (
                 <ReferenceDot
                   key={m.id}
-                  x={Math.round(m.minute / 2) * 2}
+                  x={
+                    momentumSeries.reduce(
+                      (best, p) =>
+                        Math.abs(p.minute - (m.elapsedMinute ?? m.minute)) <
+                        Math.abs(best.minute - (m.elapsedMinute ?? m.minute))
+                          ? p
+                          : best,
+                      momentumSeries[0]!,
+                    ).minute
+                  }
                   y={
-                    momentumSeries.find((p) => p.minute === Math.round(m.minute / 2) * 2)
-                      ?.momentum ?? 0
+                    momentumSeries.reduce(
+                      (best, p) =>
+                        Math.abs(p.minute - (m.elapsedMinute ?? m.minute)) <
+                        Math.abs(best.minute - (m.elapsedMinute ?? m.minute))
+                          ? p
+                          : best,
+                      momentumSeries[0]!,
+                    ).momentum
                   }
                   r={4}
                   fill={m.impact > 0 ? "var(--success)" : "var(--destructive)"}
@@ -131,7 +149,12 @@ function MomentumView() {
           </ResponsiveContainer>
         </div>
       </Panel>
-      {config.id === "football" && (
+      {eventMode && (
+        <p className="text-xs text-muted-foreground">
+          {dataset.coach.observations[1]} Elapsed playing minutes include stoppage time.
+        </p>
+      )}
+      {config.id === "football" && !eventMode && (
         <details className="rounded-xl border bg-card p-4">
           <summary className="cursor-pointer font-display text-sm uppercase tracking-wider text-muted-foreground">
             Other imported matches · event analysis
@@ -142,7 +165,14 @@ function MomentumView() {
         </details>
       )}
       <div className="grid gap-4 lg:grid-cols-3">
-        <Panel title={`Top ${top.length} momentum-changing moments`} className="lg:col-span-2">
+        <Panel
+          title={
+            eventMode
+              ? "Recorded key moments · shot xG"
+              : `Top ${top.length} momentum-changing moments`
+          }
+          className="lg:col-span-2"
+        >
           <ul className="divide-y">
             {top.map((m, i) => (
               <li key={m.id}>
@@ -164,17 +194,17 @@ function MomentumView() {
                   <DataBadge kind={m.kind} />
                   <span
                     className={cn(
-                      "flex w-16 items-center justify-end gap-1 font-mono text-sm",
+                      "flex w-24 shrink-0 items-center justify-end gap-1 whitespace-nowrap font-mono text-sm",
                       m.impact > 0 ? "text-success" : "text-destructive",
                     )}
                   >
-                    {m.impact > 0 ? (
-                      <ArrowUpRight className="size-4" />
-                    ) : (
-                      <ArrowDownRight className="size-4" />
-                    )}
-                    {m.impact > 0 ? "+" : ""}
-                    {m.impact}
+                    {!eventMode &&
+                      (m.impact > 0 ? (
+                        <ArrowUpRight className="size-4" />
+                      ) : (
+                        <ArrowDownRight className="size-4" />
+                      ))}
+                    {eventMode ? m.impactLabel : `${m.impact > 0 ? "+" : ""}${m.impact}`}
                   </span>
                 </Link>
               </li>

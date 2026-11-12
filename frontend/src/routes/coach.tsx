@@ -1,3 +1,4 @@
+import { useBackend } from "@/lib/backend-context";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Brain, Crosshair, Eye, Footprints, Route as RouteIcon, Shield, Timer } from "lucide-react";
 import { useSport } from "@/lib/sport-context";
@@ -52,6 +53,8 @@ function Coach() {
 
 function CoachView() {
   const { config, dataset } = useSport();
+  const { sourceMode } = useBackend();
+  const eventMode = config.id === "football" && sourceMode === "events";
   const { coachInsights, coachDetails, candidates, coach } = dataset;
   return (
     <div className="space-y-4">
@@ -74,10 +77,12 @@ function CoachView() {
             <p className="mt-1 text-lg leading-relaxed">{coach.body}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <ConfidenceBadge value={config.id === "football" ? null : 0.81} />
-              <DataBadge kind="simulated" />
+              <DataBadge kind={eventMode ? "observed" : "simulated"} />
               <span className="rounded border px-1.5 py-0.5 font-mono text-[10px] uppercase text-muted-foreground">
                 {config.id === "football"
-                  ? "Deterministic backend model · recorded source windows"
+                  ? eventMode
+                    ? "Recorded match events · descriptive analysis"
+                    : "Deterministic backend model · recorded source windows"
                   : "Based on 500 sim runs · 3 clips"}
               </span>
             </div>
@@ -85,7 +90,7 @@ function CoachView() {
         </div>
       </section>
       <div className="grid gap-4 lg:grid-cols-2">
-        <Panel title="Key tactical observations">
+        <Panel title={eventMode ? "Calculation and source" : "Key tactical observations"}>
           <ul className="list-disc space-y-1.5 pl-4 text-sm text-muted-foreground">
             {coach.observations.map((o) => (
               <li key={o}>{o}</li>
@@ -93,18 +98,18 @@ function CoachView() {
           </ul>
         </Panel>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Panel title="Original player">
+          <Panel title={eventMode ? "Recorded action locations" : "Original player"}>
             <p className="text-sm text-muted-foreground">{coach.original}</p>
             <DataBadge kind="observed" className="mt-2" />
           </Panel>
-          <Panel title="Ghost did differently">
+          <Panel title={eventMode ? "Tracking availability" : "Ghost did differently"}>
             <p className="text-sm text-muted-foreground">{coach.ghost}</p>
-            <DataBadge kind="simulated" className="mt-2" />
+            {!eventMode && <DataBadge kind="simulated" className="mt-2" />}
           </Panel>
-          <Panel title="What went wrong">
+          <Panel title={eventMode ? "Event-data limits" : "What went wrong"}>
             <p className="text-sm text-muted-foreground">{coach.wrong}</p>
           </Panel>
-          <Panel title="What improved">
+          <Panel title={eventMode ? "Review next" : "What improved"}>
             <p className="text-sm text-muted-foreground">{coach.improved}</p>
           </Panel>
         </div>
@@ -160,7 +165,9 @@ function CoachView() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Panel title="Recommended substitution alternatives">
+        <Panel
+          title={eventMode ? "Match players to review" : "Recommended substitution alternatives"}
+        >
           <ul className="space-y-2">
             {candidates.slice(0, 3).map((c) => (
               <li key={c.id} className="flex items-center justify-between text-sm">
@@ -179,7 +186,7 @@ function CoachView() {
             ))}
           </ol>
         </Panel>
-        <Panel title="Which scenarios to test next">
+        <Panel title={eventMode ? "Recorded moments to review" : "Which scenarios to test next"}>
           <ul className="space-y-1.5 text-sm">
             {coach.testNext.map((n) => (
               <li key={n.label}>

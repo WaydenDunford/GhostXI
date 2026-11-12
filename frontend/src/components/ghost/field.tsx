@@ -595,7 +595,7 @@ export function SimulationField({
               className={cn("font-mono font-bold", isGhost ? "fill-ghost" : "fill-foreground")}
               fontSize="1.45"
             >
-              {p.num}
+              {p.num > 0 ? p.num : "—"}
             </text>
             {showLabels && (
               <g transform="translate(0 3.5)">

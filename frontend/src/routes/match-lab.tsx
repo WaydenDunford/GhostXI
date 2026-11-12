@@ -1,4 +1,6 @@
 import { VerifiedLab } from "@/components/ghost/verified-lab";
+import { EventMatchLab } from "@/components/ghost/event-match-lab";
+import { useBackend } from "@/lib/backend-context";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -74,7 +76,16 @@ const ALL = "all";
 
 function MatchLab() {
   const { sport } = useSport();
-  return sport === "football" ? <VerifiedLab /> : <GenericLab />;
+  const { sourceMode, eventId } = useBackend();
+  return sport === "football" ? (
+    sourceMode === "events" ? (
+      <EventMatchLab key={eventId} />
+    ) : (
+      <VerifiedLab />
+    )
+  ) : (
+    <GenericLab />
+  );
 }
 
 function GenericLab() {

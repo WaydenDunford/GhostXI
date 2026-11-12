@@ -22,6 +22,8 @@ export const match = {
 export type Moment = {
   id: number;
   backendId?: string;
+  elapsedMinute?: number;
+  impactLabel?: string;
   minute: number;
   title: string;
   team: "home" | "away";

@@ -7,10 +7,22 @@ import type { SportDataset } from "./sport-data";
 import type { Player, ScoutProfile } from "./mock-data";
 import { Panel } from "@/components/ghost/ui";
 import { Button } from "@/components/ui/button";
+import { EventFootballPresentation } from "./event-presentation";
 
 // Populate Lovable's original presentation contract from the existing API.
 // No fixture values are carried into the connected football view.
 export function FootballPresentation({ children }: { children: ReactNode }) {
+  const { sport } = useSport();
+  const { sourceMode } = useBackend();
+  if (sport !== "football") return <>{children}</>;
+  return sourceMode === "events" ? (
+    <EventFootballPresentation>{children}</EventFootballPresentation>
+  ) : (
+    <TrackingFootballPresentation>{children}</TrackingFootballPresentation>
+  );
+}
+
+function TrackingFootballPresentation({ children }: { children: ReactNode }) {
   const { sport } = useSport();
   const { match, matchId, selection, catalog } = useBackend();
   const enabled = sport === "football" && !!match;

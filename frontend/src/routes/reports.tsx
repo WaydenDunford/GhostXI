@@ -12,6 +12,8 @@ import {
   VerdictBadge,
 } from "@/components/ghost/ui";
 import { Button } from "@/components/ui/button";
+import { useBackend } from "@/lib/backend-context";
+import { EventReport } from "@/components/ghost/event-report";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
@@ -31,7 +33,8 @@ export const Route = createFileRoute("/reports")({
 
 function Reports() {
   const { sport } = useSport();
-  return <ReportsView />;
+  const { sourceMode } = useBackend();
+  return sport === "football" && sourceMode === "events" ? <EventReport /> : <ReportsView />;
 }
 
 function ReportsView() {

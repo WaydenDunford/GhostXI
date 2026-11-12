@@ -1,3 +1,4 @@
+import { useBackend } from "@/lib/backend-context";
 import { PlayerDirectory } from "@/components/ghost/player-directory";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
@@ -61,6 +62,8 @@ function Scouting() {
 
 function ScoutingView() {
   const { config, dataset } = useSport();
+  const { sourceMode } = useBackend();
+  const eventMode = config.id === "football" && sourceMode === "events";
   const { candidates, scoutProfiles } = dataset;
   const [q, setQ] = useState("");
   const [pos, setPos] = useState(ALL);
@@ -79,7 +82,7 @@ function ScoutingView() {
     setMaxAge(ALL);
     setCov(ALL);
     setSel(candidates[0]!.id);
-  }, [dataset.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dataset.id, dataset.match.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const uniq = (k: "position" | "team" | "style") => [...new Set(candidates.map((c) => c[k]))];
   const list = useMemo(
@@ -116,11 +119,14 @@ function ScoutingView() {
 
   return (
     <div className="space-y-4">
-      <PageHeader eyebrow={`Fair Scouting · ${config.name}`} title="Candidate Scouting">
+      <PageHeader
+        eyebrow={`Fair Scouting · ${config.name}`}
+        title={eventMode ? "Match Roster & Player Statistics" : "Candidate Scouting"}
+      >
         {dataset.demo && <DemoBadge />}
       </PageHeader>
       <div className="grid items-start gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <Panel title={`Candidates (${list.length})`}>
+        <Panel title={`${eventMode ? "Match roster" : "Candidates"} (${list.length})`}>
           <div className="relative mb-3">
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input

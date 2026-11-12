@@ -345,6 +345,7 @@ export interface EventMatchSummary {
   competition: string | null;
   season: string | null;
   gender: string;
+  stadium: string | null;
   home: { id: number; name: string; score: number };
   away: { id: number; name: string; score: number };
   pitch: { length: number; width: number };
@@ -419,7 +420,8 @@ export interface EventPlayer {
   country: string | null;
   teamId: number;
   teamName: string;
-  jerseyNumber: number;
+  jerseyNumber: number | null;
+  starter: boolean;
   positions: string[];
   minutesPlayed: number | null;
   stats: Record<string, number | null>;

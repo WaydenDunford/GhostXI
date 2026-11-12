@@ -1,4 +1,5 @@
 import { useBackend } from "@/lib/backend-context";
+import { MatchSelector } from "./match-selector";
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -121,12 +122,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
               <div className="font-semibold">
                 {connectedFootball
-                  ? (backend.match?.name ?? "Connecting GhostXI…")
+                  ? `${match.home.name} ${match.home.score ?? "—"}–${match.away.score ?? "—"} ${match.away.name}`
                   : `${match.home.short} ${match.home.score}–${match.away.score} ${match.away.short}`}
               </div>
-              <div className="text-muted-foreground">
-                {connectedFootball ? "Verified source windows" : match.date}
-              </div>
+              <div className="text-muted-foreground">{match.date}</div>
               {dataset.demo && <DemoBadge className="mt-2" />}
             </div>
           </div>
@@ -158,16 +157,21 @@ export function AppShell({ children }: { children: ReactNode }) {
             {dataset.demo && <DemoBadge className="hidden sm:inline-flex" />}
             <span className="hidden sm:inline">
               {connectedFootball
-                ? (backend.match?.source.name ?? "Local data service")
+                ? backend.sourceMode === "events"
+                  ? "StatsBomb Open Data"
+                  : (backend.match?.source.name ?? "Local data service")
                 : match.competition}
             </span>
             <span className="rounded border px-2 py-0.5 font-mono">
               {connectedFootball
-                ? `${backend.match?.coverage.frameCount ?? 0} source frames`
+                ? backend.sourceMode === "events"
+                  ? `${backend.eventMatch.data?.eventCount ?? 0} source events`
+                  : `${backend.match?.coverage.frameCount ?? 0} source frames`
                 : `Coverage ${Math.round(match.coverage * 100)}%`}
             </span>
           </div>
         </header>
+        {connectedFootball && <MatchSelector />}
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
     </div>

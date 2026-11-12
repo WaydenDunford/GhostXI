@@ -100,3 +100,11 @@ the A-League report does not claim those players were in the anonymous source ma
 
 
 Kloppy is an optional BSD-3-Clause importer dependency. PFF data usage permission is separate.
+
+### Named matches and team selection
+
+The Lovable frontend opens on real match events. Select a team and match in the shared selector. `npm run prepare:external` imports all 38 Arsenal Premier League matches from 2003/04, plus the four existing international finals, at the pinned StatsBomb revision in `config/external-sources.json`. Changing match updates the score, date, venue, source roster, match-event viewer, xG momentum, player statistics and JSON report together. Opponent filters show the imported Arsenal fixtures, not their complete seasons.
+
+StatsBomb supplies recorded actor locations, pass/carry/shot endpoints, lineups and shot xG. The pitch steps through source events in actor-relative attacking coordinates; it does not infer other players’ locations or interpolate trajectories. Momentum uses trailing five one-minute xG bins, with period boundaries retained. Full-time score and match date remain visible. The report exports the selected match's normalized source data and calculation method.
+
+Choose **Metrica tracking** in the same selector for synchronized recorded movement and modeled ghost comparisons. Metrica Sample Game 1 is anonymous; its Home/Away identities cannot be mapped to Arsenal players. Event-only Arsenal matches are never passed into the tracking simulation. Raw downloaded data remains in ignored local caches; a fresh checkout needs `npm run prepare:external` before these matches are available.

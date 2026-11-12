@@ -141,7 +141,7 @@ export interface MarketProfile {
 }
 export interface EventMatchSummary {
   id: string; providerId: number; name: string; date: string; competition: string | null;
-  season: string | null; gender: string;
+  season: string | null; gender: string; stadium: string | null;
   home: { id: number; name: string; score: number }; away: { id: number; name: string; score: number };
   pitch: { length: number; width: number }; coordinateSystem: string;
   capabilities: { eventAnalytics: true; trackingReplay: false; ghostComparison: false };
@@ -165,7 +165,7 @@ export interface MatchEvent {
 }
 export interface EventPlayer {
   id: string; providerId: number; name: string; fullName: string; country: string | null;
-  teamId: number; teamName: string; jerseyNumber: number; positions: string[]; minutesPlayed: number | null;
+  teamId: number; teamName: string; jerseyNumber: number | null; starter: boolean; positions: string[]; minutesPlayed: number | null;
   stats: Record<string, number | null>; per90: Record<string, number | null>; sample: string; dataKind: string;
   marketLink: { status: "curated"; method: string; statsbombId: number; transfermarktId: string; source: string; profile: MarketProfile }
     | { status: "unlinked"; profile: null };

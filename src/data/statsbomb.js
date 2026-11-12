@@ -102,12 +102,15 @@ export function normalizeStatsBombMatch({ metadata, lineups, events }) {
       recoveries: own.filter(({ type }) => type === "Ball Recovery").length,
       interceptionAttempts: own.filter(({ type }) => type === "Interception").length,
       shots: shots.length, goals: shots.filter(({ shot }) => shot?.outcome === "Goal").length,
+      ownGoals: own.filter(({ type }) => type === "Own Goal Against").length,
       xg: shots.some(({ shot }) => shot?.xg === null) ? null : round(shots.reduce((sum, { shot }) => sum + (shot?.xg ?? 0), 0)),
     };
     return { id: `statsbomb:${player.player_id}`, providerId: player.player_id,
       name: player.player_nickname || player.player_name, fullName: player.player_name,
       country: player.country?.name ?? null, teamId: team.team_id, teamName: team.team_name,
-      jerseyNumber: player.jersey_number, positions: [...new Set((player.positions ?? []).map(({ position }) => position))],
+      starter: events.some((e) => e.type.name === "Starting XI" && e.team.id === team.team_id
+        && e.tactics?.lineup?.some((p) => p.player.id === player.player_id)),
+      jerseyNumber: Number.isInteger(player.jersey_number) && player.jersey_number > 0 ? player.jersey_number : null, positions: [...new Set((player.positions ?? []).map(({ position }) => position))],
       minutesPlayed: minutes, stats,
       per90: Object.fromEntries(Object.entries(stats).map(([key, value]) => [key,
         minutes > 0 && value !== null ? round(value * 90 / minutes) : null])),
@@ -143,16 +146,17 @@ export function normalizeStatsBombMatch({ metadata, lineups, events }) {
     return { eventId: event.id, period: event.period, minute: event.minute, second: event.second,
       elapsedSeconds: event.elapsedSeconds, homeXG: round(homeXG), awayXG: round(awayXG) };
   });
-  const keyMoments = normalized.filter((event) => event.period <= 4 && (event.shot || event.card?.includes("Red")))
+  const keyMoments = normalized.filter((event) => event.period <= 4 && (event.shot || event.type === "Own Goal Against" || event.card?.includes("Red")))
     .map((event) => ({ eventId: event.id, period: event.period, minute: event.minute, second: event.second,
       elapsedSeconds: event.elapsedSeconds, type: event.type, teamName: event.teamName, playerName: event.playerName,
-      xg: event.shot?.xg ?? null, outcome: event.shot?.outcome ?? event.card,
-      importance: (event.shot?.xg ?? 0) + (event.shot?.outcome === "Goal" ? 2 : 0) + (event.card?.includes("Red") ? 1 : 0) }))
+      xg: event.shot?.xg ?? null, outcome: event.shot?.outcome ?? (event.type === "Own Goal Against" ? "Own goal against" : event.card),
+      importance: (event.shot?.xg ?? 0) + (event.shot?.outcome === "Goal" || event.type === "Own Goal Against" ? 2 : 0) + (event.card?.includes("Red") ? 1 : 0) }))
     .sort((a, b) => b.importance - a.importance || a.elapsedSeconds - b.elapsedSeconds).slice(0, 10);
   return {
     id: `statsbomb:${metadata.match_id}`, providerId: metadata.match_id, name: `${metadata.home_team.home_team_name} vs ${metadata.away_team.away_team_name}`,
     date: metadata.match_date, competition: metadata.competition?.competition_name ?? null,
     season: metadata.season?.season_name ?? null, gender: metadata.home_team.home_team_gender,
+    stadium: metadata.stadium?.name ?? null,
     home: { id: homeId, name: metadata.home_team.home_team_name, score: metadata.home_score },
     away: { id: metadata.away_team.away_team_id, name: metadata.away_team.away_team_name, score: metadata.away_score },
     pitch: { length: 105, width: 68 }, coordinateSystem: "StatsBomb 120x80 scaled to 105x68; actor-relative attacking direction, not global tracking",

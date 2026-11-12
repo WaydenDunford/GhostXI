@@ -92,12 +92,24 @@ test("real sources are served through the HTTP/client API with historical ID enr
   const api = createGhostXIClient({ baseUrl: `${origin}/api/v1` });
   try {
     const sources = await api.getDatasets();
-    assert.equal(sources.statsbomb.matchCount, 4);
+    assert.equal(sources.statsbomb.matchCount, 42);
     assert.ok(sources.transfermarkt.playerCount > 50_000);
     assert.equal(sources.transfermarkt.curatedPlayerLinkCount, 6);
     assert.ok(sources.files.every(({ sha256 }) => /^[a-f0-9]{64}$/.test(sha256)));
     const matches = await api.getEventMatches();
-    assert.deepEqual(matches.map(({ providerId }) => providerId), [3869685, 3943043, 3906390, 4020846]);
+    assert.deepEqual(matches.slice(0, 4).map(({ providerId }) => providerId), [3869685, 3943043, 3906390, 4020846]);
+    const arsenal = matches.filter((m) => m.home.name === "Arsenal" || m.away.name === "Arsenal");
+    assert.equal(arsenal.length, 38);
+    assert.ok(arsenal.every((m) => m.season === "2003/2004" && m.capabilities.trackingReplay === false));
+    const last = await api.getEventMatch(3749257);
+    assert.deepEqual([last.home.name, last.home.score, last.away.name, last.away.score, last.date], ["Arsenal", 2, "Leicester City", 1, "2004-05-15"]);
+    const squad = await api.getEventPlayers(last.id);
+    assert.equal(squad.filter((p) => p.teamName === "Arsenal" && p.starter).length, 11);
+    assert.ok(squad.some((p) => p.fullName.includes("Thierry Henry")));
+    assert.equal(squad.find((p) => p.fullName === "Thierry Henry").jerseyNumber, null);
+    assert.ok((await api.getEventMatch(3749454)).keyMoments.some((m) => m.type === "Own Goal Against"));
+    const goals = await api.getEvents(last.id, { type: "Shot", limit: 500 });
+    assert.equal(goals.items.filter((e) => e.shot.outcome === "Goal").length, 3);
     for (const match of matches) {
       const detail = await api.getEventMatch(match.id);
       assert.ok(detail.keyMoments.length > 0);
@@ -105,7 +117,8 @@ test("real sources are served through the HTTP/client API with historical ID enr
       const momentum = await api.getEventMomentum(match.id);
       assert.ok(momentum.points.every(({ value }) => Number.isFinite(value) && Math.abs(value) <= 1));
       const allPlayers = await api.getEventPlayers(match.id);
-      assert.equal(allPlayers.reduce((sum, player) => sum + player.stats.goals, 0), match.home.score + match.away.score);
+      const ownGoals = await api.getEvents(match.id, { type: "Own Goal For", limit: 100 });
+      assert.equal(allPlayers.reduce((sum, player) => sum + player.stats.goals, 0) + ownGoals.total, match.home.score + match.away.score);
       for (const player of allPlayers.filter(({ marketLink }) => marketLink.status === "curated")) {
         assert.equal(player.marketLink.profile.referenceDate, match.date);
         assert.ok(player.marketLink.profile.marketValue.date <= match.date);
