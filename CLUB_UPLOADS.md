@@ -32,6 +32,24 @@ presented as public data. GhostXI checks hashes, identities and coordinates, but
 cannot verify the club's licence. The data stays on the server that received it and
 is never committed or redistributed.
 
+## Access and limits
+
+- **Who can upload:** by default the API listens on `127.0.0.1`, and uploads are
+  accepted only there. To accept uploads on any other `HOST`, set
+  `GHOSTXI_UPLOAD_TOKEN`; otherwise the server disables the upload routes and logs
+  a warning. With a token, every upload request needs `Authorization: Bearer <token>`,
+  and the dialog asks for an "Upload key" when the server requires one. If you expose
+  the frontend (its `/api` proxy) beyond this machine, set the token too.
+- **Disk:** at most 3 packages can be staged at once. Abandoned staging folders are
+  deleted after 30 minutes. Size caps: match 5 MB, events 25 MB, tracking 300 MB.
+- **Memory:** tracking is read line by line, and a line over 1 MB is rejected before
+  it is buffered. A file may hold at most 250,000 frames and 150,000 event rows. One
+  import runs at a time.
+- **Not yet:** a single shared key means a single uploader identity. Several clubs
+  sharing one server would need per-club accounts and ownership of uploaded
+  matches. Today any key holder can replace an earlier upload of the same match,
+  but never the open data.
+
 ## API
 
 ```text
