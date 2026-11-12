@@ -1,5 +1,11 @@
 # GhostXI
 
+## Ghost replay momentum
+
+Run a saved ghost scenario in Match Lab to see **Ghost momentum impact** beside the replay results. The panel compares the exact original and alternative paths, follows the playback cursor, and switches between individual and combined replacement branches. Momentum Analysis retains the selected scenario and branch, shows the same comparison, and highlights its time interval on the recorded match chart. Changing the replacement, moment, match or source, or resetting the replay, clears the previous comparison.
+
+This local spatial momentum proxy sums `exp(-distance-to-ball / 8m)` for each team, computes `(home-away)/(home+away)`, and applies a causal one-second time-weighted smoothing window. Both curves use the same formula and actual replay timestamps; replacements inherit the outgoing player's team. Values displayed on a -100 to 100 scale are home-positive. The effect applies only to the simulated clip. It does not rewrite recorded events, possession EPV, xG, or the rest of the match. Source-extrapolated tracking and shared movement assumptions remain visible limitations.
+
 GhostXI uses genuine football tracking to explore explicitly modeled alternatives.
 The active replay catalog contains Metrica Sample Game 1's three eight-second clips,
 with 22 anonymous source players and the ball. Named replacement identities come

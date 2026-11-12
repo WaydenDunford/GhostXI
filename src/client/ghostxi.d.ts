@@ -266,7 +266,16 @@ export interface GhostBranch {
 }
 export interface VerifiedSimulationResult extends SimulationResult {
   originalDataStatus: "OBSERVED" | "ESTIMATED"; originalLineup: string[]; branches: GhostBranch[];
-  findings: ScenarioFindings["findings"]; evidence: Record<string, unknown>;
+  findings: ScenarioFindings["findings"]; evidence: Record<string, unknown>; momentum: GhostMomentumComparison;
+}
+export interface GhostMomentumComparison {
+  kind: "SIMULATED"; matchId: string; scenarioId: string; metric: "spatial_momentum";
+  window: { period: number; startPeriodTimeSec: number; startMatchTimeSec: number; startElapsedTimeSec: number; durationSec: number };
+  homeTeam: { id: string; name: string }; awayTeam: { id: string; name: string };
+  methodology: string; limitations: string[];
+  branches: { branchId: string;
+    points: { timeSec: number; matchTimeSec: number; elapsedTimeSec: number; original: number; ghost: number; delta: number }[];
+    summary: { originalMean: number; ghostMean: number; delta: number; peakDelta: number } }[];
 }
 export interface SimulationFrame { timeSec: number; ball: Point; players: Record<string, Point> }
 export interface SimulationResult {

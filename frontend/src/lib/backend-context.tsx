@@ -71,6 +71,7 @@ function useBackendState() {
   const [selection, setSelection] = useState<{
     scenario: SavedSimulationScenario;
     result: VerifiedSimulationResult;
+    branchId?: string;
   } | null>(null);
   const catalog = useQuery({
     queryKey: ["ghostxi", "catalog"],
@@ -139,7 +140,7 @@ function useBackendState() {
       setMatchId(id);
       setSelection(null);
     },
-    selection,
+    selection: selection?.scenario.matchId === activeId ? selection : null,
     setSelection,
   };
 }

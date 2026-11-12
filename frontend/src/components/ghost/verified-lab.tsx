@@ -37,6 +37,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RealMatchPanel } from "./real-match-panel";
 import { cn } from "@/lib/utils";
+import { GhostMomentum } from "./ghost-momentum";
 
 export function Picker({
   label,
@@ -123,7 +124,7 @@ export function replacementsOf(s: SavedSimulationScenario): Swap[] {
 }
 
 function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
-  const { match, matchId, setSelection } = useBackend();
+  const { match, matchId, selection, setSelection } = useBackend();
   const queryClient = useQueryClient();
   const [playerId, setPlayerId] = useState(
     match!.players.find((p) => p.id === "Player2")?.id ??
@@ -194,6 +195,8 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
   );
   const clear = () => {
     setResult(null);
+    setSelection(null);
+    setBranchId("");
     setPlaying(false);
     setTime(0);
     setError("");
@@ -245,7 +248,7 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
     setView("overlay");
     setBranchId(next.branches.at(-1)?.id ?? "");
     setTime(0);
-    setSelection({ scenario, result: next });
+    setSelection({ scenario, result: next, branchId: next.branches.at(-1)?.id ?? "" });
     toast.success("Ghost simulation completed");
   };
   const create = async (simulate: boolean) => {
@@ -298,6 +301,11 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
     ? candidateList.find((c) => c.id === rows[0]!.candidatePlayerId)
     : candidate;
   const activeSwaps = result ? (branch?.replacements ?? []) : [];
+  const chooseBranch = (id: string) => {
+    setBranchId(id);
+    if (selection && selection.result.scenarioId === result?.scenarioId)
+      setSelection({ ...selection, branchId: id });
+  };
   const drawField = (mode: "original" | "ghost" | "overlay", label: string) => (
     <SourcePitch
       match={match}
@@ -910,7 +918,7 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
                 <Picker
                   label="Alternative branch"
                   value={branch?.id ?? ""}
-                  onChange={setBranchId}
+                  onChange={chooseBranch}
                   options={result.branches.map((b) => ({
                     id: b.id,
                     label: b.id === "combined" ? "Combined · independent joint run" : b.id,
@@ -955,6 +963,14 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
                   </p>
                 )}
             </Panel>
+          )}
+          {result && (
+            <GhostMomentum
+              comparison={result.momentum}
+              branchId={branch?.id}
+              onBranchChange={chooseBranch}
+              playbackTimeSec={time}
+            />
           )}
           {result && <SimulationFindings result={result} />}
         </div>

@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   ReferenceDot,
   ReferenceLine,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -16,6 +17,7 @@ import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { useSport } from "@/lib/sport-context";
 import { DataBadge, DemoBadge, PageHeader, Panel, StatBar } from "@/components/ghost/ui";
 import { cn } from "@/lib/utils";
+import { GhostMomentum } from "@/components/ghost/ghost-momentum";
 
 export const Route = createFileRoute("/momentum")({
   head: () => ({
@@ -39,10 +41,12 @@ function Momentum() {
 
 function MomentumView() {
   const { config, dataset } = useSport();
-  const { sourceMode } = useBackend();
+  const { sourceMode, matchId, selection, setSelection } = useBackend();
   const eventMode = config.id === "football" && sourceMode === "events";
   const sourceEpv = dataset.momentumMethod?.startsWith("SkillCorner");
   const { moments, momentumSeries, match } = dataset;
+  const ghostMomentum =
+    !eventMode && selection?.scenario.matchId === matchId ? selection.result.momentum : undefined;
   const top = [...moments].sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact)).slice(0, 10);
   return (
     <div className="space-y-4">
@@ -61,9 +65,18 @@ function MomentumView() {
           </Panel>
         ))}
       </div>
+      {config.id === "football" && !eventMode && (
+        <GhostMomentum
+          comparison={ghostMomentum}
+          branchId={selection?.branchId}
+          onBranchChange={(id) => {
+            if (selection) setSelection({ ...selection, branchId: id });
+          }}
+        />
+      )}
       <Panel
         title="Momentum over time"
-        info={`Positive = ${match.home.name} on top. Connected football charts use recorded source events; no alternative momentum curve is inferred. Strategy: ${config.momentumStrategy.drivers.join(", ")}.`}
+        info={`Positive = ${match.home.name} on top. This chart uses recorded match events. The ghost comparison above measures the modeled effect within the simulated replay window. Strategy: ${config.momentumStrategy.drivers.join(", ")}.`}
         action={
           <div className="flex gap-2">
             <DataBadge kind="observed" />
@@ -103,6 +116,19 @@ function MomentumView() {
                 labelFormatter={(v) => config.axisTick(Number(v))}
               />
               <ReferenceLine y={0} stroke="var(--muted-foreground)" />
+              {ghostMomentum && (
+                <ReferenceArea
+                  x1={ghostMomentum.window.startElapsedTimeSec / 60}
+                  x2={
+                    (ghostMomentum.window.startElapsedTimeSec + ghostMomentum.window.durationSec) /
+                    60
+                  }
+                  fill="var(--ghost)"
+                  fillOpacity={0.25}
+                  ifOverflow="extendDomain"
+                  label={{ value: "Ghost replay window", position: "insideTop" }}
+                />
+              )}
               <Area
                 dataKey="momentum"
                 name="Observed"

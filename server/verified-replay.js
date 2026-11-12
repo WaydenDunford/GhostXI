@@ -4,6 +4,7 @@ import { createMatchContexts } from "./match-context.js";
 import { rankPlayerMoments } from "../src/recommendation/ranking.js";
 import { classifyPosition, positionFit, footballRecommendation } from "../src/recommendation/config.js";
 import { buildMomentum } from "../src/analytics/decisionSupport.js";
+import { buildGhostMomentum } from "../src/analytics/ghostMomentum.js";
 import { simulateGhostBranch, modeledMovement } from "../src/simulation/multi-ghost.js";
 import { createScenarioStore } from "./scenario-store.js";
 
@@ -127,7 +128,11 @@ export function createVerifiedReplayService({ recording, external, behavior, pos
     if (match.provider === "metrica") {
       const window = recording.moments.find((m) => m.id === momentId);
       if (!window) throw new DomainError("Observed scenario window not found.", "MOMENT_NOT_FOUND", 404);
-      return { frames: clone(window.frames), period: window.period ?? 1, timeSec: window.startTime,
+      const sourceStart = match.frames.find((frame) => frame.sourceFrame === window.frames[0].sourceFrame);
+      return { frames: clone(window.frames), period: window.period ?? 1, timeSec: sourceStart.periodTimeSec,
+        matchTimeSec: sourceStart.matchTimeSec, elapsedTimeSec: window.startElapsedTimeSec ?? sourceStart.matchTimeSec,
+        clockLimitations: (window.period ?? 1) > 1 && !Number.isFinite(window.startElapsedTimeSec)
+          ? ["Metrica source timestamps are preserved; a separate elapsed clock accounting for earlier-period stoppage time is not available."] : [],
         cueTimeSec: window.frames.find((f) => f.sourceFrame === window.action.startFrame).time,
         anchors: { [window.targetPlayerId]: window.anchor }, sourceStatus: "OBSERVED" };
     }
@@ -140,7 +145,15 @@ export function createVerifiedReplayService({ recording, external, behavior, pos
     const metres = (p) => ({ x: p.x / 100 * match.pitch.length, y: p.y / 100 * match.pitch.width });
     return { frames: chosen.map((f) => ({ time: f.periodTimeSec - chosen[0].periodTimeSec, sourceFrame: f.sourceFrame,
       ball: metres(f.ball), players: Object.fromEntries(Object.entries(f.players).filter(([, p]) => p !== null).map(([id, p]) => [id, metres(p)])) })),
-      period: event.period, timeSec: chosen[0].periodTimeSec, cueTimeSec: 0, anchors: {}, sourceStatus: chosen.some((f) => f.dataStatus === "ESTIMATED") ? "ESTIMATED" : "OBSERVED" };
+      period: event.period, timeSec: chosen[0].periodTimeSec,
+      matchTimeSec: Number.isFinite(chosen[0].matchTimeSec) ? chosen[0].matchTimeSec
+        : ([0, 0, 2700, 5400, 6300][event.period] + chosen[0].periodTimeSec),
+      elapsedTimeSec: Number.isFinite(event.elapsedSeconds) ? event.elapsedSeconds + chosen[0].periodTimeSec - event.periodTimeSec
+        : Number.isFinite(chosen[0].matchTimeSec) ? chosen[0].matchTimeSec
+          : ([0, 0, 2700, 5400, 6300][event.period] + chosen[0].periodTimeSec),
+      clockLimitations: Number.isFinite(event.elapsedSeconds) || event.period === 1 ? []
+        : ["Source elapsed timing is unavailable; the match-clock anchor is used without inferring earlier-period stoppage time."],
+      cueTimeSec: 0, anchors: {}, sourceStatus: chosen.some((f) => f.dataStatus === "ESTIMATED") ? "ESTIMATED" : "OBSERVED" };
   }
   function validateScenario(input) {
     requireValue(input && typeof input === "object" && !Array.isArray(input), "Scenario must be an object.");
@@ -207,7 +220,12 @@ export function createVerifiedReplayService({ recording, external, behavior, pos
       delta: round(b.alternativeMetrics[key] - b.originalMetrics[key]), unit: key.endsWith("M") ? "m" : "fraction/proxy",
       interpretation: `${key}: ${b.originalMetrics[key].toFixed(4)} → ${b.alternativeMetrics[key].toFixed(4)}; a modeled geometric difference.`,
       limitation: "Ball proximity is not possession or an interception probability.", suggestedInvestigation: "Review the same role and situation in additional genuine tracking windows." })));
-    return { scenarioId: id, status: "completed", originalFrames: baseline, alternativeFrames: last.frames,
+    const momentum = buildGhostMomentum({ matchId: match.id, scenarioId: id, pitch: match.pitch,
+      teams: match.teams, players: match.players, originalFrames: baseline, branches: results,
+      window: { period: window.period, startPeriodTimeSec: window.timeSec,
+        startMatchTimeSec: window.matchTimeSec, startElapsedTimeSec: window.elapsedTimeSec,
+        clockLimitations: window.clockLimitations } });
+    return { scenarioId: id, status: "completed", originalFrames: baseline, alternativeFrames: last.frames, momentum,
       metrics: last.metrics, explanations: findings.map((f) => `${f.branchId}: ${f.interpretation}`), limitations,
       dataCoverage: Math.min(...selected.map((p) => p.dataCoverage)), originalDataStatus: window.sourceStatus,
       originalLineup: Object.keys(window.frames[0].players), branches: results, findings,
