@@ -956,19 +956,6 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
                   ))}
                 </tbody>
               </table>
-              {comparisons.length > 1 &&
-                comparisons.every(
-                  (c) =>
-                    c.result.metrics.alternativeValue ===
-                      comparisons[0]!.result.metrics.alternativeValue &&
-                    c.result.metrics.delta === comparisons[0]!.result.metrics.delta,
-                ) && (
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    All candidates produce the same result in this moment. They share the same
-                    physical settings (top speed and reaction time). Candidate-specific measured
-                    abilities and decision habits are not applied by this replay model.
-                  </p>
-                )}
             </Panel>
           )}
           {result && <SimulationFindings result={result} />}
