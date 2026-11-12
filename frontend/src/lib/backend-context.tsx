@@ -1,14 +1,26 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { loadCatalog } from "./match-catalog";
 import { ghostxi } from "./ghostxi-api";
 import { useSport } from "./sport-context";
 import type { VerifiedSimulationResult, SavedSimulationScenario } from "./backend/ghostxi";
 
+const SOURCE_MODE_KEY = "ghostxi.sourceMode";
+
 function useBackendState() {
   const { sport } = useSport();
   const [matchId, setMatchId] = useState("");
-  const [sourceMode, setSourceMode] = useState<"events" | "tracking">("events");
+  // Tracking is the default because Compare Candidates and the ghost replay only exist there.
+  // The last choice is restored after mount (not in the initializer) so SSR markup still hydrates.
+  const [sourceMode, setSourceMode] = useState<"events" | "tracking">("tracking");
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SOURCE_MODE_KEY);
+      if (saved === "events" || saved === "tracking") setSourceMode(saved);
+    } catch {
+      // Storage can be blocked (private mode); the default still works.
+    }
+  }, []);
   const [teamName, setTeamName] = useState("Arsenal");
   const [eventId, setEventId] = useState("");
   const eventCatalog = useQuery({
@@ -76,6 +88,11 @@ function useBackendState() {
     setSourceMode: (mode: "events" | "tracking") => {
       setSourceMode(mode);
       setSelection(null);
+      try {
+        localStorage.setItem(SOURCE_MODE_KEY, mode);
+      } catch {
+        // Not remembering the choice is harmless.
+      }
     },
     teamName: activeTeam,
     teams,

@@ -742,11 +742,23 @@ function ConnectedLab() {
                 size="sm"
                 variant="secondary"
                 disabled={busy || !compareIds.length}
+                title={
+                  compareIds.length
+                    ? undefined
+                    : "Tag 2+ players with COMPARE in the Talent Pool to enable this"
+                }
                 onClick={() => void runAction(compareCandidates)}
               >
                 <GitCompare />
                 Compare Candidates{compareIds.length ? ` (${compareIds.length})` : ""}
               </Button>
+              {compareIds.length < 2 && (
+                <span className="text-[11px] text-muted-foreground">
+                  {compareIds.length
+                    ? "Tag one more player with COMPARE in the Talent Pool"
+                    : "Tag 2+ players with COMPARE in the Talent Pool"}
+                </span>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/60 bg-background/40 px-4 py-2 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5">
@@ -894,6 +906,20 @@ function ConnectedLab() {
                   ))}
                 </tbody>
               </table>
+              {comparisons.length > 1 &&
+                comparisons.every(
+                  (c) =>
+                    c.result.metrics.alternativeValue ===
+                      comparisons[0]!.result.metrics.alternativeValue &&
+                    c.result.metrics.delta === comparisons[0]!.result.metrics.delta,
+                ) && (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    All candidates produce the same result in this moment. They share the same
+                    physical settings (top speed and reaction time), and player-specific decision
+                    habits only change the outcome in moments where the candidate acts on the ball,
+                    such as the attacking clip.
+                  </p>
+                )}
             </Panel>
           )}
           {result && <SimulationFindings result={result} />}
