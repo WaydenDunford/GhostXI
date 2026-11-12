@@ -93,15 +93,31 @@ const common = {
 
 describe("Lovable field with backend source frames", () => {
   it("uses named source shirt numbers and distinguishes provider-extrapolated player coordinates", () => {
-    const named = { ...match, provider: "skillcorner", players: roster.map((p, i) => ({ ...p,
-      name: i === 0 ? "Daniel Arzani" : "Jake Brimmer", shortName: i === 0 ? "D. Arzani" : "J. Brimmer", jerseyNumber: i === 0 ? 19 : 22 })) };
-    render(<SourcePitch {...common} match={named} source={{ ...source,
-      playerProvenance: { Player2: "ESTIMATED", Player15: "OBSERVED" } }} mode="original" />);
+    const named = {
+      ...match,
+      provider: "skillcorner",
+      players: roster.map((p, i) => ({
+        ...p,
+        name: i === 0 ? "Daniel Arzani" : "Jake Brimmer",
+        shortName: i === 0 ? "D. Arzani" : "J. Brimmer",
+        jerseyNumber: i === 0 ? 19 : 22,
+      })),
+    };
+    render(
+      <SourcePitch
+        {...common}
+        match={named}
+        source={{ ...source, playerProvenance: { Player2: "ESTIMATED", Player15: "OBSERVED" } }}
+        mode="original"
+      />,
+    );
     const extrapolated = screen.getByRole("button", { name: "Select D. Arzani" });
     const detected = screen.getByRole("button", { name: "Select J. Brimmer" });
     expect(extrapolated.textContent).toContain("19");
-    expect(extrapolated.querySelector('circle[r="1.75"]')?.getAttribute("stroke-dasharray")).toBe("0.35 0.3");
-    expect(detected.querySelector('circle[r="1.75"]')?.getAttribute("stroke-dasharray")).toBeNull();
+    expect(extrapolated.querySelector('circle[r="1.1"]')?.getAttribute("stroke-dasharray")).toBe(
+      "0.35 0.3",
+    );
+    expect(detected.querySelector('circle[r="1.1"]')?.getAttribute("stroke-dasharray")).toBeNull();
   });
   it("retains labels, shadows and stadium styling while using exact recorded coordinates", () => {
     const { container } = render(<SourcePitch {...common} mode="original" />);

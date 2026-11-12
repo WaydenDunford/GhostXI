@@ -137,6 +137,7 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState("1");
   const [view, setView] = useState("original");
+  const [labels, setLabels] = useState<"focus" | "all">("focus");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [candidateId, setCandidateId] = useState("");
@@ -312,6 +313,7 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
       mode={mode}
       onSelect={selectPlayer}
       label={label}
+      focus={labels === "focus"}
     />
   );
   const chooseCandidate = (id: string) => {
@@ -569,7 +571,7 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
         <div className="order-1 min-w-0 space-y-4 xl:order-2">
           <div
             ref={field}
-            className="flex flex-col overflow-hidden rounded-xl border bg-stands shadow-panel fullscreen:rounded-none fullscreen:border-0"
+            className="flex flex-col overflow-hidden rounded-xl border bg-stands shadow-panel fullscreen:h-screen fullscreen:w-screen fullscreen:rounded-none fullscreen:border-0"
           >
             <div className="flex items-center justify-between px-5 pt-4 text-xs">
               <span className="text-eyebrow">
@@ -590,9 +592,10 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
                 </Button>
               </div>
             </div>
-            <div className="flex flex-1 flex-col justify-center px-6 py-6 md:px-8">
+            {/* In fullscreen the pitch fits the remaining screen height, so the controls stay visible. */}
+            <div className="flex flex-1 flex-col justify-center px-6 py-6 md:px-8 [:fullscreen_&]:min-h-0 [:fullscreen_&]:py-3 [:fullscreen_&_.stand-ring]:mx-auto [:fullscreen_&_.stand-ring]:max-h-[calc(100vh-10rem)] [:fullscreen_&_.stand-ring]:w-auto [:fullscreen_&_.stand-ring]:max-w-full">
               {view === "split" ? (
-                <div className="grid gap-6 2xl:grid-cols-2 fullscreen:grid-cols-2">
+                <div className="grid gap-6 2xl:grid-cols-2 [:fullscreen_&]:grid-cols-2">
                   <div>
                     <p className="mb-2 font-mono text-xs uppercase tracking-widest text-warning">
                       Original · {selected?.name}
@@ -678,10 +681,10 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
               <Button
                 size="icon"
                 variant="secondary"
-                aria-label="Toggle fullscreen"
+                aria-label={isFull ? "Exit fullscreen" : "Toggle fullscreen"}
                 onClick={toggleFullscreen}
               >
-                <Maximize />
+                {isFull ? <Minimize /> : <Maximize />}
               </Button>
               <ToggleGroup
                 type="single"
@@ -700,6 +703,29 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
                     {v[0]!.toUpperCase() + v.slice(1)}
                   </ToggleGroupItem>
                 ))}
+              </ToggleGroup>
+              <ToggleGroup
+                type="single"
+                value={labels}
+                onValueChange={(v) => v && setLabels(v as "focus" | "all")}
+                variant="outline"
+                size="sm"
+                aria-label="Player labels"
+              >
+                <ToggleGroupItem
+                  value="focus"
+                  title="Name tags only for the compared, selected and on-ball players; others faded"
+                  className="px-3 data-[state=on]:bg-ghost/20 data-[state=on]:text-ghost"
+                >
+                  Focus
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="all"
+                  title="Name tags for all 22 players"
+                  className="px-3 data-[state=on]:bg-ghost/20 data-[state=on]:text-ghost"
+                >
+                  All
+                </ToggleGroupItem>
               </ToggleGroup>
             </div>
             <div className="flex flex-wrap items-center gap-2 border-t border-border/60 bg-background/40 px-4 py-2.5">
@@ -751,11 +777,23 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
                 size="sm"
                 variant="secondary"
                 disabled={busy || !compareIds.length}
+                title={
+                  compareIds.length
+                    ? undefined
+                    : "Tag 2+ players with COMPARE in the Talent Pool to enable this"
+                }
                 onClick={() => void runAction(compareCandidates)}
               >
                 <GitCompare />
                 Compare Candidates{compareIds.length ? ` (${compareIds.length})` : ""}
               </Button>
+              {compareIds.length < 2 && (
+                <span className="text-[11px] text-muted-foreground">
+                  {compareIds.length
+                    ? "Tag one more player with COMPARE in the Talent Pool"
+                    : "Tag 2+ players with COMPARE in the Talent Pool"}
+                </span>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/60 bg-background/40 px-4 py-2 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5">
@@ -903,6 +941,19 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
                   ))}
                 </tbody>
               </table>
+              {comparisons.length > 1 &&
+                comparisons.every(
+                  (c) =>
+                    c.result.metrics.alternativeValue ===
+                      comparisons[0]!.result.metrics.alternativeValue &&
+                    c.result.metrics.delta === comparisons[0]!.result.metrics.delta,
+                ) && (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    All candidates produce the same result in this moment. They share the same
+                    physical settings (top speed and reaction time). Candidate-specific measured
+                    abilities and decision habits are not applied by this replay model.
+                  </p>
+                )}
             </Panel>
           )}
           {result && <SimulationFindings result={result} />}

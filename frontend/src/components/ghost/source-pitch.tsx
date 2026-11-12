@@ -25,6 +25,7 @@ export function SourcePitch({
   mode,
   onSelect,
   label,
+  focus = true,
 }: {
   match: SourceMatch;
   source: TrackingFrame | null;
@@ -39,6 +40,7 @@ export function SourcePitch({
   mode: FieldMode;
   onSelect: (id: string) => void;
   label: string;
+  focus?: boolean;
 }) {
   const convert = (p: Point | null | undefined): P | null => (p ? [p.x * 1.05, p.y * 0.68] : null);
   const start = sourceFrames[0]?.periodTimeSec ?? 0;
@@ -101,6 +103,7 @@ export function SourcePitch({
       sourceTrails={trails}
       accessibleLabel={label}
       showLabels
+      focus={focus}
       className="stand-ring rounded-md"
       selectedId={selected}
       onPlayerClick={(id) =>
