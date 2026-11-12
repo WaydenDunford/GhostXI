@@ -4,36 +4,36 @@ import type { EventMatch, EventPlayer, EventMomentum, MatchEvent } from "./backe
 
 // Small source-shaped fixture: deliberately unknown shirt number and playing time.
 const match = {
-  id: "statsbomb:3749257",
-  providerId: 3749257,
-  name: "Arsenal vs Leicester City",
-  date: "2004-05-15",
-  competition: "Premier League",
-  season: "2003/2004",
-  stadium: "Arsenal Stadium",
-  home: { id: 1, name: "Arsenal", score: 2 },
-  away: { id: 31, name: "Leicester City", score: 1 },
+  id: "statsbomb:3943043",
+  providerId: 3943043,
+  name: "Spain vs England",
+  date: "2024-07-14",
+  competition: "UEFA Euro",
+  season: "2024",
+  stadium: "Olympiastadion Berlin",
+  home: { id: 772, name: "Spain", score: 2 },
+  away: { id: 768, name: "England", score: 1 },
   statsMethod: "Recorded event counts",
   keyMoments: [
     {
-      eventId: "henry-goal",
+      eventId: "bf03dfcf-f281-4646-98de-620649a1308b",
       minute: 46,
-      second: 45,
-      elapsedSeconds: 2900,
-      teamName: "Arsenal",
-      playerName: "Thierry Henry",
+      second: 9,
+      elapsedSeconds: 2892.681,
+      teamName: "Spain",
+      playerName: "Nico Williams",
       outcome: "Goal",
       type: "Shot",
-      xg: 0.783,
+      xg: 0.1124816,
     },
   ],
 } as EventMatch;
 const roster = [
   {
-    id: "statsbomb:henry",
-    providerId: 123,
-    fullName: "Thierry Henry",
-    name: "Thierry Henry",
+    id: "statsbomb:68574",
+    providerId: 68574,
+    fullName: "Nicholas Williams Arthuer",
+    name: "Nico Williams",
     sample: "one match",
     dataKind: "OBSERVED / DERIVED",
     marketLink: { status: "unlinked", profile: null },
@@ -44,48 +44,48 @@ const roster = [
       ready: true,
       limitations: [],
     },
-    teamName: "Arsenal",
-    teamId: 1,
+    teamName: "Spain",
+    teamId: 772,
     jerseyNumber: null,
     minutesPlayed: null,
     starter: true,
-    positions: ["Left Center Forward"],
-    country: "France",
-    stats: { goals: 1, assists: 0, shots: 5, passesCompleted: 20 },
+    positions: ["Left Wing"],
+    country: "Spain",
+    stats: { goals: 1, assists: 0, shots: 3, passesCompleted: 41 },
     per90: {},
   },
 ] as EventPlayer[];
 const momentum = {
-  totals: { homeXG: 2.54, awayXG: 0.11 },
+  totals: { homeXG: 1.7917, awayXG: 0.7264 },
   method: "Trailing five xG bins",
-  points: [{ elapsedSeconds: 2900, value: 0.5 }],
+  points: [{ elapsedSeconds: 2892.681, value: 0.5 }],
 } as EventMomentum;
 const events = [
-  { id: "henry-goal", type: "Shot", phase: "match" },
+  { id: "bf03dfcf-f281-4646-98de-620649a1308b", type: "Shot", phase: "match" },
   { id: "pass", type: "Pass" },
 ] as MatchEvent[];
 
 describe("named match presentation", () => {
   it("keeps source identity, full-time score, real player names and selected-match statistics together", () => {
-    const d = eventDataset(match, roster, momentum, events, "Arsenal");
+    const d = eventDataset(match, roster, momentum, events, "Spain");
     expect(d.match).toMatchObject({
       id: match.id,
-      date: "2004-05-15",
-      home: { name: "Arsenal", score: 2 },
-      away: { name: "Leicester City", score: 1 },
+      date: "2024-07-14",
+      home: { name: "Spain", score: 2 },
+      away: { name: "England", score: 1 },
     });
-    expect(d.candidates[0]?.name).toBe("Thierry Henry");
-    expect(d.scoutProfiles["statsbomb:henry"]?.assists).toBe(0);
+    expect(d.candidates[0]?.name).toBe("Nico Williams");
+    expect(d.scoutProfiles["statsbomb:68574"]?.assists).toBe(0);
     expect(d.moments[0]).toMatchObject({
-      backendId: "henry-goal",
-      minute: 46.75,
-      elapsedMinute: 2900 / 60,
+      backendId: "bf03dfcf-f281-4646-98de-620649a1308b",
+      minute: 46.15,
+      elapsedMinute: 2892.681 / 60,
     });
-    expect(d.scoreboardStats[0]).toEqual(["Home xG", "2.54"]);
+    expect(d.scoreboardStats[0]).toEqual(["Home xG", "1.79"]);
   });
   it("preserves missing metadata and never synthesizes tracking, ghost results or scouting ratings from events", () => {
-    const d = eventDataset(match, roster, momentum, events, "Arsenal");
-    expect(d.scoutProfiles["statsbomb:henry"]?.minutes).toBeNull();
+    const d = eventDataset(match, roster, momentum, events, "Spain");
+    expect(d.scoutProfiles["statsbomb:68574"]?.minutes).toBeNull();
     expect(d.candidates[0]?.fit).toBeNull();
     expect(d.candidates[0]?.radar).toEqual([]);
     expect(d.fieldPlayers.every((p) => p.frames.length === 0)).toBe(true);

@@ -80,7 +80,7 @@ export function eventDataset(
   const passes = events.filter((e) => e.type === "Pass");
   const home = (t: EventMatch["home"]) => ({
     name: t.name,
-    short: t.name === "Arsenal" ? "ARS" : t.name.slice(0, 3).toUpperCase(),
+    short: t.name.slice(0, 3).toUpperCase(),
     score: t.score,
     formation: "See recorded lineup",
   });

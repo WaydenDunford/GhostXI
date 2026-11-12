@@ -103,11 +103,11 @@ Kloppy is an optional BSD-3-Clause importer dependency. PFF data usage permissio
 
 ### Named matches and team selection
 
-The Lovable frontend opens on real match events. Select a team and match in the shared selector. `npm run prepare:external` imports all 38 Arsenal Premier League matches from 2003/04, plus the four existing international finals, at the pinned StatsBomb revision in `config/external-sources.json`. Changing match updates the score, date, venue, source roster, match-event viewer, xG momentum, player statistics and JSON report together. Opponent filters show the imported Arsenal fixtures, not their complete seasons.
+The Lovable frontend defaults to named tracking replays. The **Real match events** source offers the four configured international finals at the pinned StatsBomb revision in `config/external-sources.json`. Its initial team comes from the newest available fixture. Changing match updates the score, date, venue, source roster, match-event viewer, xG momentum, player statistics and JSON report together. The discontinued Arsenal 2003/04 dataset is excluded from imports and from the active API even if an older local cache still contains it.
 
 StatsBomb supplies recorded actor locations, pass/carry/shot endpoints, lineups and shot xG. The pitch steps through source events in actor-relative attacking coordinates; it does not infer other players’ locations or interpolate trajectories. Momentum uses trailing five one-minute xG bins, with period boundaries retained. Full-time score and match date remain visible. The report exports the selected match's normalized source data and calculation method.
 
-Choose **Metrica tracking** in the same selector for synchronized recorded movement and modeled ghost comparisons. Metrica Sample Game 1 is anonymous; its Home/Away identities cannot be mapped to Arsenal players. Event-only Arsenal matches are never passed into the tracking simulation. Raw downloaded data remains in ignored local caches; a fresh checkout needs `npm run prepare:external` before these matches are available.
+Choose **Tracking replays** in the same selector for synchronized recorded movement and modeled ghost comparisons. Metrica Sample Game 1 is anonymous; its Home/Away identities cannot be mapped to named players. Event-only matches are never passed into the tracking simulation. Raw downloaded data remains in ignored local caches; a fresh checkout needs `npm run prepare:external` before these matches are available.
 
 ### Named tracking from May 2025
 
@@ -117,4 +117,4 @@ The Lovable frontend opens **Tracking replays**, defaults to the newest availabl
 
 Original/ghost/overlay replay, source-aligned action cues, bench replacements and saved scenarios use the same verified backend. Candidate eligibility is evaluated against the selected clip's actual lineup. Ghost branches use shared explicit physical assumptions, not measured personalized abilities; all other source paths stay unchanged. The separate source momentum chart uses SkillCorner's model-derived possession EPV, signed by team and normalized by peak magnitude, with elapsed playing time including stoppage. It is not shot xG or a result prediction.
 
-Source and MIT license: https://github.com/SkillCorner/opendata. Normalized clip bundles, raw tracking and source license copies are kept in ignored `src/data/skillcorner/replays/`; a fresh checkout must run the importer. Arsenal/StatsBomb event matches and the anonymous Metrica source remain selectable.
+Source and MIT license: https://github.com/SkillCorner/opendata. Normalized clip bundles, raw tracking and source license copies are kept in ignored `src/data/skillcorner/replays/`; a fresh checkout must run the importer. The configured StatsBomb event matches and the anonymous Metrica source remain selectable.

@@ -115,6 +115,13 @@ export async function loadFootballService({ scenarioFile = process.env.GHOSTXI_S
   let external = null;
   try { external = JSON.parse(await readFile(new URL("../src/data/external-football.json", import.meta.url), "utf8")); }
   catch (error) { if (error.code !== "ENOENT") throw error; }
+  if (external) {
+    // Cached downloads may outlive source configuration changes. Retired matches
+    // must not reappear through the event API or candidate evidence.
+    const sources = JSON.parse(await readFile(new URL("../config/external-sources.json", import.meta.url), "utf8"));
+    const enabled = new Set(sources.statsbomb.matches.map((m) => m.id));
+    external.statsbomb.matches = external.statsbomb.matches.filter((m) => enabled.has(m.metadata.match_id));
+  }
   let behavior = null;
   try { behavior = JSON.parse(await readFile(new URL("../src/data/ai/profiles.json", import.meta.url), "utf8")); }
   catch (error) { if (error.code !== "ENOENT") throw error; }

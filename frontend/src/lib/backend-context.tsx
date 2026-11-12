@@ -23,7 +23,7 @@ function useBackendState() {
   }, []);
   const [trackingTeam, setTrackingTeam] = useState("all");
 
-  const [teamName, setTeamName] = useState("Arsenal");
+  const [teamName, setTeamName] = useState("");
   const [eventId, setEventId] = useState("");
   const eventCatalog = useQuery({
     queryKey: ["ghostxi", "event-catalog"],
@@ -34,7 +34,8 @@ function useBackendState() {
   });
   const eventMatches = eventCatalog.data ?? [];
   const teams = [...new Set(eventMatches.flatMap((m) => [m.home.name, m.away.name]))].sort();
-  const activeTeam = teams.includes(teamName) ? teamName : (teams[0] ?? "");
+  const latestEventMatch = [...eventMatches].sort((a, b) => b.date.localeCompare(a.date))[0];
+  const activeTeam = teams.includes(teamName) ? teamName : (latestEventMatch?.home.name ?? "");
   const teamMatches = eventMatches
     .filter((m) => m.home.name === activeTeam || m.away.name === activeTeam)
     .sort((a, b) => b.date.localeCompare(a.date));
