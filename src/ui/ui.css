@@ -281,6 +281,23 @@
 .ghostxi .gx-metrics :is(th, td):last-child { padding-right: 0; }
 .ghostxi .gx-metrics thead { color: var(--gx-muted); }
 .ghostxi .gx-metrics small { display: block; color: var(--gx-muted); font-size: .73rem; font-weight: 400; }
+/* Keep numbers and headers whole: the panel's overflow-wrap: anywhere let the table split "1.53" into "1.5/3". */
+.ghostxi .gx-metrics :is(th, td) { overflow-wrap: normal; }
+.ghostxi .gx-metrics :is(th, td):not(:first-child) { white-space: nowrap; }
+
+.ghostxi .gx-scouting:not([hidden]) {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--gx-border);
+  border-radius: 8px;
+}
+.ghostxi .gx-scouting p { color: var(--gx-muted); font-size: .82rem; }
+.ghostxi .gx-scouting .gx-card-name { color: var(--gx-text); font-size: 1rem; font-weight: 700; }
+.ghostxi .gx-scouting .gx-card-club { color: var(--gx-text); }
+.ghostxi .gx-scouting .gx-card-speed { color: var(--gx-accent); font-weight: 600; }
+.ghostxi .gx-scouting .gx-card-sources { margin-top: 4px; font-size: .72rem; }
 .ghostxi .gx-better { color: var(--gx-accent); }
 .ghostxi .gx-worse { color: #ffad9d; }
 .ghostxi .gx-explanations { margin-top: 10px; color: var(--gx-muted); font-size: .82rem; }

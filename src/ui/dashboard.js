@@ -1,4 +1,5 @@
 import { createPitch } from "./pitch.js";
+import { scoutingCardLines } from "./scoutingCard.js";
 
 const numberFormat = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
 const deltaFormat = new Intl.NumberFormat("en", {
@@ -62,6 +63,7 @@ export function mountDashboard(root, {
           <header class="gx-panel-header">
             <h2 id="${prefix}-analysis">Coaching &amp; scouting</h2>
           </header>
+          <div class="gx-scouting" aria-label="Candidate scouting card" hidden></div>
           <div class="gx-results"></div>
         </section>
       </div>
@@ -83,12 +85,14 @@ export function mountDashboard(root, {
   const matchLabel = find(".gx-match");
   const status = find(".gx-status");
   const results = find(".gx-results");
+  const scoutingCard = find(".gx-scouting");
   const canvas = find("canvas");
   const pitch = createPitch(canvas, match);
   const moments = new Map(match.moments.map((moment) => [moment.id, moment]));
   const players = new Map(match.players.map((player) => [player.id, player]));
   let currentMoment;
   let currentAnalysis;
+  let currentCandidate;
 
   const momentumChart = match.momentum?.length ? createMomentumChart(doc, match.momentum, `${prefix}-momentum`) : null;
   if (momentumChart) find(".gx-insights").prepend(momentumChart.section);
@@ -126,6 +130,17 @@ export function mountDashboard(root, {
     }
     momentSelect.setValue(momentId);
     candidateSelect.setValue(candidateId);
+    if (candidateId !== currentCandidate) {
+      const lines = scoutingCardLines(players.get(candidateId));
+      scoutingCard.replaceChildren(...lines.map(({ className, text }) => {
+        const line = doc.createElement("p");
+        line.className = className;
+        line.textContent = text;
+        return line;
+      }));
+      scoutingCard.hidden = lines.length === 0;
+      currentCandidate = candidateId;
+    }
     compare.disabled = !moment?.candidatePlayerIds.includes(candidateId) || !players.has(candidateId);
     if (tracked) setText(compare, comparisonVisible ? "Hide comparison" : "Compare players");
     play.disabled = !moment;
