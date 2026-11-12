@@ -15,6 +15,6 @@ async function check(directory) {
   }
 }
 await check("src"); await check("server");
-const files=["index.html","src/main.js","src/ui/verified-dashboard.js","src/ui/dashboard.js","src/ui/pitch.js","src/ui/ui.css","src/client/ghostxi.js","src/replay/controller.js"];
+const files=["index.html","src/main.js","src/ui/verified-dashboard.js","src/ui/dashboard.js","src/ui/scoutingCard.js","src/ui/pitch.js","src/ui/ui.css","src/client/ghostxi.js","src/replay/controller.js"];
 for (const file of files) { const target=join("dist/public",file); await mkdir(dirname(target),{recursive:true}); await copyFile(file,target); }
 console.log(`Validated source syntax; built ${files.length} public UI assets. API/source datasets are separate; no private source files bundled.`);

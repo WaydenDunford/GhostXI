@@ -7,30 +7,39 @@ from verified source profiles and remain independent counterfactual candidates.
 
 ## Run locally
 
-Requires Node.js 20+ and Python 3 for one-time data imports:
+The primary interface is the full Lovable frontend in `frontend/`, connected to
+the local Node API. Use Node.js 22.12+ and Python 3 for one-time data imports:
 
 ```sh
 npm ci
+npm run install:frontend
 npm run prepare:data
 npm run prepare:external
 npm run prepare:ai
-npm run start:api
+npm run dev
 ```
 
-Open http://127.0.0.1:8787/. Existing prepared data can be used immediately. The API
-serves the local replay interface; the old Python-only static startup is superseded.
+Open http://127.0.0.1:5173/match-lab. Existing prepared data can be used immediately.
+`npm run dev` starts the Lovable frontend and starts or reuses the local API on
+port 8787. API calls use the frontend's same-origin proxy. `npm run start:api`
+also runs the backend alone, including its compact reference interface on port 8787.
 Choose a source player and moment, add one or more replacements, then save/simulate.
 Compare the historical original, individual ghosts and an independent combined run.
 Playback, pause, seeking, speed and saved reruns use synchronized source timestamps.
 
 ```sh
 npm test
+npm run check:frontend
+npm run test:frontend
 npm run build
+npm start
 ```
 
-The public build contains eight frontend assets and no source datasets. The backend
-must still be hosted separately for Lovable. Configure the exact frontend origin in
-CORS_ORIGINS. No deployment, scan, watcher or automatic refactor is enabled.
+The build produces the Lovable client and Node SSR application in `frontend/.output/`,
+alongside the compact reference UI in `dist/public`. Source datasets are not copied
+into either public bundle. `npm start` runs the built Lovable interface and local API.
+For separate frontend/API hosting, configure `VITE_GHOSTXI_API_URL` and the exact
+frontend origin in `CORS_ORIGINS`. This repository does not deploy or enable a scan.
 
 ## Data and API
 
@@ -50,13 +59,31 @@ PFF full requested-access data is not available. The actual public Kloppy excerp
 of Argentina-France 10517 successfully parses but lacks a continuous eligible replay
 window; it is not a playable World Cup match. StatsBomb's four finals remain available
 for real event analytics/profile evidence. Their former reconstructed replays are no
-longer active. SkillCorner/Wyscout loader capability exists in PitchKit, but source
-files have not been imported. No unsupported Bosnia example is in the active catalog.
+longer active. Full SkillCorner/Wyscout tracking files have not been imported.
+The separate SkillCorner A-League aggregate workflow is described below. No
+unsupported Bosnia example is in the active catalog.
 
 Unknown physical attributes remain null. Simulated speed/reaction/spacing defaults
 are separate model parameters. These geometric experiments do not predict match
 outcomes, possession or transfer success. Metrica match date/score/real player names
 remain unknown. Historical originals retain genuine source coordinates and gaps.
+
+## A-League measured candidate workflow
+
+The merged scouting workflow preserves the twelve real A-League Men 2024/25
+candidates, four per source clip, in `src/data/scouting-candidates.json`.
+`npm run report:candidates` compares their individual modeled runs on the recorded
+Metrica clips. `npm run prepare:scouting` rebuilds the candidate file from SkillCorner
+season aggregates and Transfermarkt; those upstream files are not revision-pinned,
+so rebuilding can change the shortlist. The original scouting card and its source
+license are retained with this workflow.
+
+SkillCorner supplies measured top speed, time-to-sprint and out-of-possession
+running aggregates. Acceleration, reaction delay and engagement range are modeled
+mappings, not direct measurements. These source-informed individual runs coexist
+with the verified multi-ghost API's explicitly shared physical defaults. The active
+Lovable talent pool uses the verified StatsBomb/Transfermarkt identity workflow;
+the A-League report does not claim those players were in the anonymous source match.
 
 ## Reuse decisions
 

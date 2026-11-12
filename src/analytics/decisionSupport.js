@@ -116,6 +116,13 @@ export function analyzeScenario({ match, momentId, simulation, possessionValue }
   const { action, context } = moment;
   const { role, point, window, end, reach, cue, task } = contexts[context];
   const recordedPlayer = match.players.find(({ id }) => id === outgoingPlayerId).displayName;
+  const incoming = match.players.find(({ id }) => id === incomingPlayerId);
+  const sourceInformed = !!incoming?.settings;
+  const candidateName = incoming?.scouting?.name ?? incoming?.displayName ?? "the replacement";
+  const firstEngaged = simulation.engagedFrames?.findIndex(Boolean) ?? -1;
+  const engagement = sourceInformed ? firstEngaged >= 0
+    ? `The modeled candidate engaged the ball from ${baselineFrames[firstEngaged].time.toFixed(1)} s within a ${incoming.settings.engageRange.toFixed(1)} m modeled engage range.`
+    : "The modeled candidate held the assigned point; no reachable ball projection satisfied its engagement parameters." : null;
   const homeHasBall = action.team === "HOME";
   const ballTeam = homeHasBall ? "Home" : "Away";
   requireValue(typeof match.homeAttacksRightFirstHalf === "boolean", "The attacking direction is required.");
@@ -129,8 +136,8 @@ export function analyzeScenario({ match, momentId, simulation, possessionValue }
     id, label, unit, better, explanation, baseline: original[id], alternative: candidate[id],
     delta: Number((candidate[id] - original[id]).toFixed(2)),
   });
-  const baselineFit = scoreBranch(original);
-  const alternativeFit = scoreBranch(candidate);
+  const baselineFit = scoreBranch(original, sourceInformed);
+  const alternativeFit = scoreBranch(candidate, sourceInformed);
   const fit = alternativeFit.components;
   const { score, title } = alternativeFit;
   const scoreDelta = score - baselineFit.score;
@@ -157,28 +164,32 @@ export function analyzeScenario({ match, momentId, simulation, possessionValue }
       reasoning: [
         `${comparison} Closest approach was ${candidate.closest.toFixed(1)} m for the replacement and ${original.closest.toFixed(1)} m for ${recordedPlayer}.`,
         reachEvidence,
+        ...(engagement ? [engagement] : []),
         `Home's ${role} role awards ${fit.cover.toFixed(1)}/40 for positioning, ${fit.access.toFixed(1)}/40 for access to the ball, and ${fit.value.toFixed(1)}/20 for possession-value access.`,
         `${decision}: the same rubric scores the recorded player ${baselineFit.score}/100 and the replacement ${score}/100 (${scoreDelta >= 0 ? "+" : ""}${scoreDelta} points). A difference below 3 points is treated as inconclusive.`,
         `Positioning error changed by ${(candidate.coverError - original.coverError).toFixed(2)} m (lower is better); reachable EPV changed by ${(candidate.accessibleValue - original.accessibleValue).toFixed(2)} EPV × 100 (higher is better). These measures can disagree.`,
       ],
-      caveat: `The candidate profiles are hypothetical. This one-clip score describes fit for Home's assigned ${role} role.`,
+      caveat: sourceInformed
+        ? `${candidateName} has measured SkillCorner source attributes. Acceleration, reaction and engagement settings are modeled mappings; this is one modeled run in a different match, not measured historical performance or recruitment success.`
+        : `The candidate profiles are hypothetical. This one-clip score describes fit for Home's assigned ${role} role.`,
     },
     assumptions: simulation.assumptions,
     scouting: { baseline: baselineFit, alternative: alternativeFit, scoreDelta, decision,
       context: moment.context, scope: "one scenario / assigned role", ageUsedInScore: false },
     confidence: { level: "low", observed: ["recorded tracking", "match events"],
-      modeled: ["replacement trajectory", "candidate age and traits", "tactical target"],
+      modeled: sourceInformed ? ["replacement trajectory", "mapped movement parameters", "tactical target"] : ["replacement trajectory", "candidate age and traits", "tactical target"],
       unknown: ["ball height", "successful control", "real candidate ability"] },
-    qualityLabel: "Low confidence · One clip · Assumed player attributes",
+    qualityLabel: sourceInformed ? "Low confidence · One clip · Source-informed movement parameters" : "Low confidence · One clip · Assumed player attributes",
   };
 }
 
-function scoreBranch(summary) {
+function scoreBranch(summary, sourceInformed = false) {
   const components = { cover: 40 * clamp01(1 - summary.coverError / 12),
     access: 40 * clamp01(1 - summary.closest / 6), value: 20 * summary.accessRatio };
   const score = Math.round(components.cover + components.access + components.value);
-  const title = score >= 85 ? "Must-have candidate" : score >= 70 ? "Strong prospect"
-    : score >= 50 ? "Possible fit" : "Low fit";
+  const title = sourceInformed
+    ? score >= 85 ? "Strong modeled fit" : score >= 70 ? "Good modeled fit" : score >= 50 ? "Partial modeled fit" : "Weak modeled fit"
+    : score >= 85 ? "Must-have candidate" : score >= 70 ? "Strong prospect" : score >= 50 ? "Possible fit" : "Low fit";
   return { score, title, components };
 }
 

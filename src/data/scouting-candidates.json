@@ -1,0 +1,650 @@
+{
+  "competition": "A-League Men",
+  "season": "2024/25",
+  "sources": [
+    {
+      "name": "SkillCorner Open Data",
+      "licence": "MIT",
+      "url": "https://github.com/SkillCorner/opendata"
+    },
+    {
+      "name": "Transfermarkt datasets",
+      "licence": "CC0",
+      "url": "https://github.com/dcaribou/transfermarkt-datasets"
+    }
+  ],
+  "shortlists": {
+    "home-wide-interception": [
+      "sc-51667",
+      "sc-560894",
+      "sc-698137",
+      "sc-51013"
+    ],
+    "home-defensive-press": [
+      "sc-51005",
+      "sc-51644",
+      "sc-51017",
+      "sc-560992"
+    ],
+    "home-deep-pass-attack": [
+      "sc-6871",
+      "sc-133501",
+      "sc-26844",
+      "sc-965685"
+    ]
+  },
+  "candidates": [
+    {
+      "id": "sc-51667",
+      "name": "Daniel Hall",
+      "club": "Auckland FC",
+      "clubNow": "JEF United",
+      "positionGroup": "Central Defender",
+      "pick": "fastest",
+      "age": 26,
+      "transfermarkt": {
+        "position": "Defender",
+        "subPosition": "Centre-Back",
+        "foot": "both",
+        "heightCm": 184,
+        "marketValue": {
+          "eur": 400000,
+          "date": "2025-06-03",
+          "club": "Auckland FC",
+          "older": false
+        }
+      },
+      "measured": {
+        "psv99Kmh": 30.87,
+        "psv99Percentile": 1,
+        "timeToSprintS": 1.28,
+        "sprintPercentile": 0.857,
+        "oopHiPerMin": 12.44,
+        "oopPercentile": 0.544,
+        "minutes": 1483,
+        "matches": 15,
+        "offBallRunsPer30": 6.89,
+        "runsInBehindPer30": 0,
+        "dangerousRunsPer30": 0,
+        "passCompletion": 0.899,
+        "lineBreakingPer30": 5.94
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.575,
+        "acceleration": 5.714,
+        "reaction": 0.206,
+        "engageRange": 6.265
+      },
+      "national": {
+        "caps": 0,
+        "goals": 0,
+        "team": null,
+        "citizenship": "Australia",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    },
+    {
+      "id": "sc-560894",
+      "name": "Alexandar Popovic",
+      "club": "Sydney FC",
+      "clubNow": null,
+      "positionGroup": "Central Defender",
+      "pick": "outOfPossession",
+      "age": 22,
+      "transfermarkt": {
+        "position": "Defender",
+        "subPosition": "Centre-Back",
+        "foot": "right",
+        "heightCm": 186,
+        "marketValue": {
+          "eur": 350000,
+          "date": "2025-06-03",
+          "club": "Sydney FC",
+          "older": false
+        }
+      },
+      "measured": {
+        "psv99Kmh": 28.93,
+        "psv99Percentile": 0.794,
+        "timeToSprintS": 1.72,
+        "sprintPercentile": 0.171,
+        "oopHiPerMin": 20.83,
+        "oopPercentile": 1,
+        "minutes": 1458,
+        "matches": 15,
+        "offBallRunsPer30": 11.48,
+        "runsInBehindPer30": 0.08,
+        "dangerousRunsPer30": 0.53,
+        "passCompletion": 0.913,
+        "lineBreakingPer30": 10.64
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.036,
+        "acceleration": 4.343,
+        "reaction": 0.425,
+        "engageRange": 9
+      },
+      "national": {
+        "caps": 4,
+        "goals": 0,
+        "team": null,
+        "citizenship": "Australia",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    },
+    {
+      "id": "sc-698137",
+      "name": "Isaac Hughes",
+      "club": "Wellington Phoenix FC",
+      "clubNow": null,
+      "positionGroup": "Central Defender",
+      "pick": "acceleration",
+      "age": 21,
+      "transfermarkt": {
+        "position": "Defender",
+        "subPosition": "Centre-Back",
+        "foot": "right",
+        "heightCm": 183,
+        "marketValue": {
+          "eur": 350000,
+          "date": "2025-06-03",
+          "club": "Wellington Phoenix",
+          "older": false
+        }
+      },
+      "measured": {
+        "psv99Kmh": 28.88,
+        "psv99Percentile": 0.779,
+        "timeToSprintS": 1.11,
+        "sprintPercentile": 1,
+        "oopHiPerMin": 10.29,
+        "oopPercentile": 0.309,
+        "minutes": 2294,
+        "matches": 24,
+        "offBallRunsPer30": 12.64,
+        "runsInBehindPer30": 0.13,
+        "dangerousRunsPer30": 0.13,
+        "passCompletion": 0.885,
+        "lineBreakingPer30": 9.72
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.022,
+        "acceleration": 6,
+        "reaction": 0.16,
+        "engageRange": 4.853
+      },
+      "national": {
+        "caps": 2,
+        "goals": 0,
+        "team": null,
+        "citizenship": "New Zealand",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    },
+    {
+      "id": "sc-51013",
+      "name": "Brendan Hamill",
+      "club": "Melbourne Victory FC",
+      "clubNow": null,
+      "positionGroup": "Central Defender",
+      "pick": "hiddenTalent",
+      "age": 32,
+      "transfermarkt": {
+        "position": "Defender",
+        "subPosition": "Centre-Back",
+        "foot": "right",
+        "heightCm": 185,
+        "marketValue": {
+          "eur": 300000,
+          "date": "2025-06-03",
+          "club": "Melbourne Victory",
+          "older": false
+        }
+      },
+      "measured": {
+        "psv99Kmh": 29.34,
+        "psv99Percentile": 0.897,
+        "timeToSprintS": 1.3,
+        "sprintPercentile": 0.8,
+        "oopHiPerMin": 17.09,
+        "oopPercentile": 0.882,
+        "minutes": 1955,
+        "matches": 20,
+        "offBallRunsPer30": 8.19,
+        "runsInBehindPer30": 0.07,
+        "dangerousRunsPer30": 0.29,
+        "passCompletion": 0.894,
+        "lineBreakingPer30": 8.19
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.15,
+        "acceleration": 5.6,
+        "reaction": 0.224,
+        "engageRange": 8.294
+      },
+      "national": {
+        "caps": 14,
+        "goals": 1,
+        "team": null,
+        "citizenship": "Australia",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    },
+    {
+      "id": "sc-51005",
+      "name": "Dylan Pierias",
+      "club": "Adelaide United FC",
+      "clubNow": null,
+      "positionGroup": "Full Back",
+      "pick": "fastest",
+      "age": 25,
+      "transfermarkt": {
+        "position": "Defender",
+        "subPosition": "Right-Back",
+        "foot": "right",
+        "heightCm": 175,
+        "marketValue": {
+          "eur": 450000,
+          "date": "2025-06-03",
+          "club": "Adelaide United",
+          "older": false
+        }
+      },
+      "measured": {
+        "psv99Kmh": 31.21,
+        "psv99Percentile": 0.986,
+        "timeToSprintS": 1.18,
+        "sprintPercentile": 1,
+        "oopHiPerMin": 14.7,
+        "oopPercentile": 0.347,
+        "minutes": 2165,
+        "matches": 22,
+        "offBallRunsPer30": 29.11,
+        "runsInBehindPer30": 3.49,
+        "dangerousRunsPer30": 6.21,
+        "passCompletion": 0.767,
+        "lineBreakingPer30": 2.07
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.669,
+        "acceleration": 6,
+        "reaction": 0.16,
+        "engageRange": 5.083
+      },
+      "national": {
+        "caps": 1,
+        "goals": 0,
+        "team": null,
+        "citizenship": "Australia",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    },
+    {
+      "id": "sc-51644",
+      "name": "Rhyan Grant",
+      "club": "Sydney FC",
+      "clubNow": null,
+      "positionGroup": "Full Back",
+      "pick": "outOfPossession",
+      "age": 34,
+      "transfermarkt": {
+        "position": "Defender",
+        "subPosition": "Right-Back",
+        "foot": "right",
+        "heightCm": 174,
+        "marketValue": {
+          "eur": 400000,
+          "date": "2025-06-03",
+          "club": "Sydney FC",
+          "older": false
+        }
+      },
+      "measured": {
+        "psv99Kmh": 29.11,
+        "psv99Percentile": 0.542,
+        "timeToSprintS": 1.35,
+        "sprintPercentile": 0.667,
+        "oopHiPerMin": 25.65,
+        "oopPercentile": 0.986,
+        "minutes": 1309,
+        "matches": 13,
+        "offBallRunsPer30": 18.4,
+        "runsInBehindPer30": 2.08,
+        "dangerousRunsPer30": 3.66,
+        "passCompletion": 0.845,
+        "lineBreakingPer30": 3.5
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.086,
+        "acceleration": 5.333,
+        "reaction": 0.267,
+        "engageRange": 8.917
+      },
+      "national": {
+        "caps": 21,
+        "goals": 1,
+        "team": null,
+        "citizenship": "Australia",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    },
+    {
+      "id": "sc-51017",
+      "name": "Tim Payne",
+      "club": "Wellington Phoenix FC",
+      "clubNow": null,
+      "positionGroup": "Full Back",
+      "pick": "acceleration",
+      "age": 31,
+      "transfermarkt": {
+        "position": "Defender",
+        "subPosition": "Right-Back",
+        "foot": "right",
+        "heightCm": 179,
+        "marketValue": {
+          "eur": 450000,
+          "date": "2025-06-03",
+          "club": "Wellington Phoenix",
+          "older": false
+        }
+      },
+      "measured": {
+        "psv99Kmh": 30.17,
+        "psv99Percentile": 0.931,
+        "timeToSprintS": 1.2,
+        "sprintPercentile": 0.978,
+        "oopHiPerMin": 16.21,
+        "oopPercentile": 0.583,
+        "minutes": 1504,
+        "matches": 16,
+        "offBallRunsPer30": 24.06,
+        "runsInBehindPer30": 1.94,
+        "dangerousRunsPer30": 5.18,
+        "passCompletion": 0.801,
+        "lineBreakingPer30": 4.81
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.381,
+        "acceleration": 5.956,
+        "reaction": 0.167,
+        "engageRange": 6.5
+      },
+      "national": {
+        "caps": 55,
+        "goals": 3,
+        "team": null,
+        "citizenship": "New Zealand",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    },
+    {
+      "id": "sc-560992",
+      "name": "Daniel Wilmering",
+      "club": "Newcastle United Jets FC",
+      "clubNow": null,
+      "positionGroup": "Full Back",
+      "pick": "hiddenTalent",
+      "age": 24,
+      "transfermarkt": {
+        "position": "Defender",
+        "subPosition": "Left-Back",
+        "foot": "left",
+        "heightCm": 178,
+        "marketValue": {
+          "eur": 350000,
+          "date": "2025-06-03",
+          "club": "Newcastle United Jets",
+          "older": false
+        }
+      },
+      "measured": {
+        "psv99Kmh": 29.87,
+        "psv99Percentile": 0.819,
+        "timeToSprintS": 1.21,
+        "sprintPercentile": 0.933,
+        "oopHiPerMin": 17.88,
+        "oopPercentile": 0.694,
+        "minutes": 2084,
+        "matches": 21,
+        "offBallRunsPer30": 26.41,
+        "runsInBehindPer30": 0.69,
+        "dangerousRunsPer30": 4.98,
+        "passCompletion": 0.797,
+        "lineBreakingPer30": 5.39
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.297,
+        "acceleration": 5.867,
+        "reaction": 0.181,
+        "engageRange": 7.167
+      },
+      "national": {
+        "caps": 0,
+        "goals": 0,
+        "team": null,
+        "citizenship": "Australia",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    },
+    {
+      "id": "sc-6871",
+      "name": "Marin Jakoliš",
+      "club": "Macarthur FC",
+      "clubNow": null,
+      "positionGroup": "Wide Attacker",
+      "pick": "fastest",
+      "age": 28,
+      "transfermarkt": {
+        "position": "Attack",
+        "subPosition": "Left Winger",
+        "foot": "right",
+        "heightCm": 182,
+        "marketValue": {
+          "eur": 600000,
+          "date": "2023-05-31",
+          "club": "AEK Larnaca",
+          "older": true
+        }
+      },
+      "measured": {
+        "psv99Kmh": 29.93,
+        "psv99Percentile": 0.842,
+        "timeToSprintS": 1.35,
+        "sprintPercentile": 0.595,
+        "oopHiPerMin": 10.34,
+        "oopPercentile": 0.084,
+        "minutes": 1857,
+        "matches": 20,
+        "offBallRunsPer30": 31.52,
+        "runsInBehindPer30": 3.2,
+        "dangerousRunsPer30": 10.84,
+        "passCompletion": 0.751,
+        "lineBreakingPer30": 2.05
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.314,
+        "acceleration": 5.19,
+        "reaction": 0.29,
+        "engageRange": 3.505
+      },
+      "national": {
+        "caps": 15,
+        "goals": 5,
+        "team": null,
+        "citizenship": "Croatia",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    },
+    {
+      "id": "sc-133501",
+      "name": "Logan Rogerson",
+      "club": "Auckland FC",
+      "clubNow": null,
+      "positionGroup": "Wide Attacker",
+      "pick": "outOfPossession",
+      "age": 27,
+      "transfermarkt": {
+        "position": "Attack",
+        "subPosition": "Right Winger",
+        "foot": "right",
+        "heightCm": 182,
+        "marketValue": {
+          "eur": 450000,
+          "date": "2025-06-03",
+          "club": "Auckland FC",
+          "older": false
+        }
+      },
+      "measured": {
+        "psv99Kmh": 28.92,
+        "psv99Percentile": 0.6,
+        "timeToSprintS": 1.29,
+        "sprintPercentile": 0.786,
+        "oopHiPerMin": 26.3,
+        "oopPercentile": 0.958,
+        "minutes": 1797,
+        "matches": 22,
+        "offBallRunsPer30": 35.77,
+        "runsInBehindPer30": 3.83,
+        "dangerousRunsPer30": 12.03,
+        "passCompletion": 0.753,
+        "lineBreakingPer30": 0.96
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.033,
+        "acceleration": 5.571,
+        "reaction": 0.229,
+        "engageRange": 8.747
+      },
+      "national": {
+        "caps": 18,
+        "goals": 2,
+        "team": null,
+        "citizenship": "New Zealand",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    },
+    {
+      "id": "sc-26844",
+      "name": "Riku Danzaki",
+      "club": "Western United",
+      "clubNow": null,
+      "positionGroup": "Wide Attacker",
+      "pick": "acceleration",
+      "age": 25,
+      "transfermarkt": {
+        "position": "Attack",
+        "subPosition": "Right Winger",
+        "foot": "both",
+        "heightCm": 174,
+        "marketValue": {
+          "eur": 250000,
+          "date": "2023-06-26",
+          "club": "Motherwell FC",
+          "older": true
+        }
+      },
+      "measured": {
+        "psv99Kmh": 29.58,
+        "psv99Percentile": 0.758,
+        "timeToSprintS": 1.24,
+        "sprintPercentile": 0.952,
+        "oopHiPerMin": 17.2,
+        "oopPercentile": 0.663,
+        "minutes": 2136,
+        "matches": 26,
+        "offBallRunsPer30": 37.69,
+        "runsInBehindPer30": 3.91,
+        "dangerousRunsPer30": 14.31,
+        "passCompletion": 0.713,
+        "lineBreakingPer30": 1.26
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.217,
+        "acceleration": 5.905,
+        "reaction": 0.175,
+        "engageRange": 6.979
+      },
+      "national": {
+        "caps": 0,
+        "goals": 0,
+        "team": null,
+        "citizenship": "Japan",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    },
+    {
+      "id": "sc-965685",
+      "name": "Liam Gillion",
+      "club": "Auckland FC",
+      "clubNow": null,
+      "positionGroup": "Wide Attacker",
+      "pick": "hiddenTalent",
+      "age": 22,
+      "transfermarkt": {
+        "position": "Attack",
+        "subPosition": "Left Winger",
+        "foot": "right",
+        "heightCm": 178,
+        "marketValue": {
+          "eur": 350000,
+          "date": "2025-06-03",
+          "club": "Auckland FC",
+          "older": false
+        }
+      },
+      "measured": {
+        "psv99Kmh": 29.92,
+        "psv99Percentile": 0.832,
+        "timeToSprintS": 1.35,
+        "sprintPercentile": 0.595,
+        "oopHiPerMin": 17.25,
+        "oopPercentile": 0.674,
+        "minutes": 954,
+        "matches": 11,
+        "offBallRunsPer30": 52.48,
+        "runsInBehindPer30": 3.97,
+        "dangerousRunsPer30": 20.73,
+        "passCompletion": 0.742,
+        "lineBreakingPer30": 2.2
+      },
+      "filled": [],
+      "settings": {
+        "topSpeed": 8.311,
+        "acceleration": 5.19,
+        "reaction": 0.29,
+        "engageRange": 7.042
+      },
+      "national": {
+        "caps": 2,
+        "goals": 0,
+        "team": null,
+        "citizenship": "New Zealand",
+        "youthCapsPossible": true,
+        "tournaments": []
+      }
+    }
+  ]
+}

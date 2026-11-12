@@ -15,7 +15,9 @@
     "build:frontend": "npm run build --prefix frontend",
     "test:frontend": "npm test --prefix frontend",
     "check:frontend": "npm run typecheck --prefix frontend",
-    "build:legacy": "node scripts/build.js"
+    "build:legacy": "node scripts/build.js",
+    "prepare:scouting": "node scripts/prepare-scouting.js",
+    "report:candidates": "node scripts/report-candidates.js"
   },
   "engines": {
     "node": ">=20"

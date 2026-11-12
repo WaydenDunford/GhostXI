@@ -7,7 +7,7 @@ const PREFIX = "/api/v1";
 const MAX_BODY = 16 * 1024;
 const publicAssets = new Map([
   ["/", ["index.html", "text/html"]], ["/index.html", ["index.html", "text/html"]],
-  ...["src/main.js", "src/ui/verified-dashboard.js", "src/ui/dashboard.js", "src/ui/pitch.js", "src/client/ghostxi.js", "src/replay/controller.js"]
+  ...["src/main.js", "src/ui/verified-dashboard.js", "src/ui/dashboard.js", "src/ui/scoutingCard.js", "src/ui/pitch.js", "src/client/ghostxi.js", "src/replay/controller.js"]
     .map((path) => [`/${path}`, [path, "text/javascript"]]),
   ["/src/ui/ui.css", ["src/ui/ui.css", "text/css"]],
 ]);

@@ -155,5 +155,6 @@ test("HTTP acceptance: verified catalog -> two replacements -> saved/reopened in
     assert.equal((await fetch(origin+"/api/scenarios",{method:"POST",headers:{"Content-Type":"application/json"},body:"{"})).status,400);
     assert.equal((await fetch(origin+"/src/data/external-football.json")).status,404);
     assert.equal((await fetch(origin+"/")).status,200);
+    assert.equal((await fetch(origin+"/src/ui/scoutingCard.js")).status,200);
   } finally { await new Promise((resolve)=>server.close(resolve)); await unlink(file); await rmdir(directory); }
 });
