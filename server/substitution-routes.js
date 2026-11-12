@@ -26,12 +26,13 @@ export async function handleSubstitutionRequest({ request, response, url, params
   const resource = params[1] === "scenarios" && params.length === 3;
   const operation = params[1] === "scenarios" && params.length === 4 && ["simulate", "duplicate", "findings"].includes(params[3]);
   const scouting = params[1] === "scouting" && params.length === 2;
+  const coach = params[1] === "coach" && params.length === 2;
   const config = params[1] === "recommendation" && params[2] === "config" && params.length === 3;
   const datasetStatus = params[1] === "datasets" && params[2] === "status" && params.length === 3;
   const matchList = params[1] === "matches" && params.length === 2;
   const matchDetail = params[1] === "matches" && params.length === 3;
   const tracking = params[1] === "matches" && params.length === 4 && params[3] === "tracking";
-  if (!(lineup || moments || candidates || collection || resource || operation || scouting || config || datasetStatus || matchList || matchDetail || tracking)) return false;
+  if (!(lineup || moments || candidates || collection || resource || operation || scouting || coach || config || datasetStatus || matchList || matchDetail || tracking)) return false;
   const methods = collection ? ["GET", "POST"] : resource ? ["GET", "PATCH", "PUT", "DELETE"]
     : operation && params[3] !== "findings" ? ["POST"] : ["GET"];
   if (request.method === "OPTIONS") {
@@ -43,7 +44,7 @@ export async function handleSubstitutionRequest({ request, response, url, params
     throw new DomainError("This HTTP method is unavailable for the scenario route.", "METHOD_NOT_ALLOWED", 405);
   }
   const allowedQuery = moments ? ["playerId", "limit", "position"] : tracking ? ["momentId", "period", "fromSec", "toSec", "offset", "limit"] : candidates ? ["matchId", "replacePlayerId", "momentId"]
-    : scouting ? ["candidateId", "matchId"] : collection && request.method === "GET" ? ["matchId", "candidateId"] : [];
+    : scouting ? ["candidateId", "matchId"] : coach ? ["matchId", "scenarioId"] : collection && request.method === "GET" ? ["matchId", "candidateId"] : [];
   requireValue([...url.searchParams.keys()].every((key) => allowedQuery.includes(key) && url.searchParams.getAll(key).length === 1), "Unknown or repeated query parameter.");
   const query = Object.fromEntries(url.searchParams);
   const required = (...keys) => requireValue(keys.every((key) => typeof query[key] === "string" && query[key].length > 0 && query[key].length <= 180), "Required query IDs are missing or invalid.");
@@ -67,6 +68,7 @@ export async function handleSubstitutionRequest({ request, response, url, params
     result = service.getRecommendedMoments(params[2], { ...query, limit: Number(query.limit ?? 5) });
   } else if (candidates) { required("matchId", "replacePlayerId"); result = service.getReplacementCandidates(query); }
   else if (scouting) { required("candidateId"); result = await service.getCandidateAssessment(query); }
+  else if (coach) { required("matchId"); if (query.scenarioId !== undefined) required("scenarioId"); result = await service.getCoachingReport(query); }
   else if (config) result = service.getRecommendationConfig();
   else if (collection) {
     if (request.method === "POST") { result = await service.createSavedScenario(await body(request)); status = 201; }

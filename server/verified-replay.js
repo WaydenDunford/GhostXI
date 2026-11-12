@@ -6,6 +6,7 @@ import { classifyPosition, positionFit, footballRecommendation } from "../src/re
 import { buildMomentum } from "../src/analytics/decisionSupport.js";
 import { simulateGhostBranch, modeledMovement } from "../src/simulation/multi-ghost.js";
 import { createScenarioStore } from "./scenario-store.js";
+import { buildCoachingReport } from "./coaching-report.js";
 
 const clone = (value) => structuredClone(value);
 const mean = (values) => values.reduce((a, b) => a + b, 0) / values.length;
@@ -280,6 +281,65 @@ export function createVerifiedReplayService({ recording, external, behavior, pos
     async simulateSavedScenario(id) { return execute(await store.get(id)); },
     async getSavedScenarioFindings(id) { const r = execute(await store.get(id)); return { scenarioId: id, findings: r.findings,
       dataStatus: r.originalDataStatus, source: r.evidence.recordedFacts.source, evidence: r.evidence, modeledDefaults: modeledMovement, limitations: r.limitations }; },
+    async getCoachingReport({ matchId, scenarioId }) {
+      const match = requireMatch(matchId);
+      let scenario;
+      if (scenarioId) {
+        scenario = await store.get(scenarioId);
+        requireValue(scenario.matchId === matchId, "Choose a comparison from the selected match.");
+        validateScenario(mutable(scenario));
+      } else {
+        scenario = (await store.list()).reverse().find((row) => {
+          if (row.matchId !== matchId) return false;
+          try { validateScenario(mutable(row)); return true; } catch { return false; }
+        });
+      }
+      const analysisOrigin = scenario ? "saved" : "automatic";
+      if (!scenario) {
+        // A preview is computed from a real playable window without saving a case.
+        for (const moment of moments(match)) {
+          const window = windowFor(match, moment.id), active = Object.keys(window.frames[0].players);
+          const actor = match.events.find((event) => `event:${event.id}` === moment.id)?.playerId;
+          const ordered = active.map((id) => player(match, id)).filter((p) => classifyPosition(p.position) !== "goalkeeper")
+            .sort((a, b) => Number(b.id === actor) - Number(a.id === actor)
+              || Number(b.teamId === match.teams[0].id) - Number(a.teamId === match.teams[0].id)
+              || dist(window.frames[0].players[a.id], window.frames[0].ball) - dist(window.frames[0].players[b.id], window.frames[0].ball));
+          const original = ordered.find((p) => candidateDetails(match, p.id, active).length > 0);
+          if (!original) continue;
+          scenario = { id: `coaching-preview:${matchId}:${moment.id}`, sportId: "football", matchId, momentId: moment.id,
+            originalPlayerId: original.id, candidatePlayerId: candidateDetails(match, original.id, active)[0].id, seed: 42 };
+          break;
+        }
+        requireValue(scenario, "Choose a playable moment and replacement in Match Lab to review a substitution.");
+      }
+      const validated = validateScenario(mutable(scenario));
+      const replacements = validated.replacements, focus = replacements[0];
+      const candidates = candidateDetails(match, focus.originalPlayerId, Object.keys(validated.window.frames[0].players));
+      const evaluations = [{ scenario, result: execute(scenario) }];
+      for (const candidate of candidates) {
+        if (candidate.id === focus.candidatePlayerId || replacements.slice(1).some((r) => r.candidatePlayerId === candidate.id)) continue;
+        const alternative = { ...scenario, id: `coaching-option:${scenario.id}:${candidate.id}` };
+        if (scenario.replacements) alternative.replacements = replacements.map((r, index) => index ? r : { ...r, candidatePlayerId: candidate.id });
+        else alternative.candidatePlayerId = candidate.id;
+        evaluations.push({ scenario: alternative, result: execute(alternative) });
+      }
+      const window = validated.window, windowSeconds = window.frames.at(-1).time - window.frames[0].time;
+      const momentTitle = moments(match, focus.originalPlayerId, 10).find((m) => m.id === scenario.momentId)?.title ?? "Selected match moment";
+      const allCandidates = [...new Map(replacements.flatMap((r) => candidateDetails(match, r.originalPlayerId, Object.keys(window.frames[0].players)))
+        .map((p) => [p.id, p])).values()];
+      const report = buildCoachingReport({ match, scenario, evaluations, candidates: allCandidates, players: match.players, windowSeconds, momentTitle });
+      report.alternatives = report.alternatives.map((alternative) => {
+        const candidate = allCandidates.find((p) => p.id === alternative.candidateId);
+        const team = match.teams.find((t) => t.id === candidate?.teamId);
+        return { ...alternative, availability: candidate?.source === "bench" ? "match-bench" : "reference-player", teamName: team?.name ?? candidate?.team ?? null };
+      });
+      const { originalFrames, alternativeFrames, ...simulation } = evaluations[0].result;
+      simulation.branches = simulation.branches.map(({ frames, ...branch }) => branch);
+      return { ...report, scenario: clone(scenario),
+        context: { match: summary(match), momentTitle, period: window.period, startPeriodTimeSec: window.timeSec,
+          endPeriodTimeSec: window.timeSec + windowSeconds, analysisOrigin, comparedCount: evaluations.length },
+        simulation };
+    },
     async getCandidateAssessment({ candidateId, matchId }) {
       const valid = (await store.list()).filter((r) => !matchId || r.matchId === matchId).flatMap((r) => { try { return [{ scenario: r, result: execute(r) }]; } catch { return []; } });
       const unique = [...new Map(valid.map((r) => [JSON.stringify(mutable({ ...r.scenario, seed: 0 })), r])).values()];

@@ -1,6 +1,8 @@
 import { useBackend } from "@/lib/backend-context";
 import { PageHeader, Panel, DataBadge } from "./ui";
 import { Button } from "@/components/ui/button";
+import { EventCoachingActions } from "./event-coaching";
+import { buildEventCoachingActions } from "@/lib/event-coaching";
 
 export function EventReport() {
   const b = useBackend();
@@ -10,7 +12,19 @@ export function EventReport() {
   function download() {
     const url = URL.createObjectURL(
       new Blob(
-        [JSON.stringify({ match: m, players, momentum: xg, events: b.eventActions.data }, null, 2)],
+        [
+          JSON.stringify(
+            {
+              match: m,
+              players,
+              momentum: xg,
+              events: b.eventActions.data,
+              coachingReview: buildEventCoachingActions(players, b.teamName),
+            },
+            null,
+            2,
+          ),
+        ],
         { type: "application/json" },
       ),
     );
@@ -38,6 +52,7 @@ export function EventReport() {
         </p>
         <DataBadge kind="observed" />
       </Panel>
+      <EventCoachingActions players={players} teamName={b.teamName} />
       <Panel title="Recorded player statistics">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -73,8 +88,8 @@ export function EventReport() {
       <Panel title="Source and calculation">
         <p className="text-sm">{m.statsMethod}</p>
         <p className="mt-2 text-sm text-muted-foreground">
-          {xg.method} Continuous tracking and ghost comparison are unavailable for this event-only
-          match.
+          {xg.method} Coaching review actions use the named player's recorded actions in this match.
+          Event counts describe what happened; review the sequences before changing the lineup.
         </p>
         <img className="mt-3 h-9" src="/api/v1/datasets/statsbomb/logo" alt="Data: StatsBomb" />
       </Panel>

@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useBackend } from "@/lib/backend-context";
 import { EventReport } from "@/components/ghost/event-report";
+import { SimulationCoaching } from "@/components/ghost/simulation-coaching";
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/reports")({
 function Reports() {
   const { sport } = useSport();
   const { sourceMode } = useBackend();
+  if (sport === "football" && sourceMode === "tracking") return <SimulationCoaching variant="report" />;
   return sport === "football" && sourceMode === "events" ? <EventReport /> : <ReportsView />;
 }
 
