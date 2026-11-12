@@ -109,7 +109,7 @@ Kloppy is an optional BSD-3-Clause importer dependency. PFF data usage permissio
 
 ### Named matches and team selection
 
-The Lovable frontend defaults to named tracking replays. The **Real match events** source offers the four configured international finals at the pinned StatsBomb revision in `config/external-sources.json`. Its initial team comes from the newest available fixture. Changing match updates the score, date, venue, source roster, match-event viewer, xG momentum, player statistics and JSON report together. The discontinued Arsenal 2003/04 dataset is excluded from imports and from the active API even if an older local cache still contains it.
+The Lovable frontend defaults to named tracking replays. The **Real match events** source offers the configured international finals and World Cup reference matches at the pinned StatsBomb revision in `config/external-sources.json`. Its initial team comes from the newest available fixture. Changing match updates the score, date, venue, source roster, match-event viewer, xG momentum, player statistics and JSON report together. The discontinued Arsenal 2003/04 dataset is excluded from imports and from the active API even if an older local cache still contains it.
 
 StatsBomb supplies recorded actor locations, pass/carry/shot endpoints, lineups and shot xG. The pitch steps through source events in actor-relative attacking coordinates; it does not infer other players’ locations or interpolate trajectories. Momentum uses trailing five one-minute xG bins, with period boundaries retained. Full-time score and match date remain visible. The report exports the selected match's normalized source data and calculation method.
 

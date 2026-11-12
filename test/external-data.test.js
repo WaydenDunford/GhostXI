@@ -84,6 +84,7 @@ test("real sources are served through the HTTP/client API with historical ID enr
     if (error.code === "ENOENT") { t.skip("Run npm run prepare:external for the real dataset check."); return; }
     throw error;
   }
+  const sourceConfig = JSON.parse(await readFile(new URL("../config/external-sources.json", import.meta.url), "utf8"));
   const service = await loadFootballService();
   const server = createApiServer({ service });
   server.listen(0, "127.0.0.1");
@@ -92,12 +93,12 @@ test("real sources are served through the HTTP/client API with historical ID enr
   const api = createGhostXIClient({ baseUrl: `${origin}/api/v1` });
   try {
     const sources = await api.getDatasets();
-    assert.equal(sources.statsbomb.matchCount, 4);
+    assert.equal(sources.statsbomb.matchCount, sourceConfig.statsbomb.matches.length);
     assert.ok(sources.transfermarkt.playerCount > 50_000);
-    assert.equal(sources.transfermarkt.curatedPlayerLinkCount, 6);
+    assert.equal(sources.transfermarkt.curatedPlayerLinkCount, sourceConfig.playerLinks.length);
     assert.ok(sources.files.every(({ sha256 }) => /^[a-f0-9]{64}$/.test(sha256)));
     const matches = await api.getEventMatches();
-    assert.deepEqual(matches.map(({ providerId }) => providerId), [3869685, 3943043, 3906390, 4020846]);
+    assert.deepEqual(matches.map(({ providerId }) => providerId), sourceConfig.statsbomb.matches.map(({ id }) => id));
     assert.ok(matches.every((m) => m.season !== "2003/2004"));
     await assert.rejects(api.getEventMatch(3749257), (error) => error.status === 404);
     for (const match of matches) {

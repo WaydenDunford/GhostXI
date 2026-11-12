@@ -38,6 +38,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RealMatchPanel } from "./real-match-panel";
 import { cn } from "@/lib/utils";
 import { GhostMomentum } from "./ghost-momentum";
+import { Input } from "@/components/ui/input";
+
+// Accent-insensitive so typing "vinicius" finds "Vinícius Júnior".
+const searchable = (text: string) =>
+  text
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim();
 
 export function Picker({
   label,
@@ -143,6 +152,7 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
   const [error, setError] = useState("");
   const [candidateId, setCandidateId] = useState("");
   const [positionFilter, setPositionFilter] = useState("all");
+  const [poolSearch, setPoolSearch] = useState("");
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [comparisons, setComparisons] = useState<
     { name: string; result: VerifiedSimulationResult }[]
@@ -334,7 +344,10 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
       {candidateList
         .filter(
           (c) =>
-            c.source === sourceType && (positionFilter === "all" || c.position === positionFilter),
+            c.source === sourceType &&
+            (positionFilter === "all" || c.position === positionFilter) &&
+            (sourceType !== "scouting" ||
+              searchable(`${c.name} ${c.team ?? ""}`).includes(searchable(poolSearch))),
         )
         .map((c) => (
           <li
@@ -571,6 +584,15 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
                     })),
                   ]}
                 />
+                {tab === "pool" && (
+                  <Input
+                    value={poolSearch}
+                    onChange={(e) => setPoolSearch(e.target.value)}
+                    placeholder="Search scouted player or country"
+                    aria-label="Search scouted players"
+                    className="mt-2 h-8 text-xs"
+                  />
+                )}
                 {candidateRows(tab === "bench" ? "bench" : "scouting")}
               </TabsContent>
             ))}
@@ -795,13 +817,6 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
                 <GitCompare />
                 Compare Candidates{compareIds.length ? ` (${compareIds.length})` : ""}
               </Button>
-              {compareIds.length < 2 && (
-                <span className="text-[11px] text-muted-foreground">
-                  {compareIds.length
-                    ? "Tag one more player with COMPARE in the Talent Pool"
-                    : "Tag 2+ players with COMPARE in the Talent Pool"}
-                </span>
-              )}
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/60 bg-background/40 px-4 py-2 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5">
@@ -949,19 +964,6 @@ function ConnectedLab({ momentIndex }: { momentIndex?: number | undefined }) {
                   ))}
                 </tbody>
               </table>
-              {comparisons.length > 1 &&
-                comparisons.every(
-                  (c) =>
-                    c.result.metrics.alternativeValue ===
-                      comparisons[0]!.result.metrics.alternativeValue &&
-                    c.result.metrics.delta === comparisons[0]!.result.metrics.delta,
-                ) && (
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    All candidates produce the same result in this moment. They share the same
-                    physical settings (top speed and reaction time). Candidate-specific measured
-                    abilities and decision habits are not applied by this replay model.
-                  </p>
-                )}
             </Panel>
           )}
           {result && (
