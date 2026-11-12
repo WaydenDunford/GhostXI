@@ -27,17 +27,19 @@ export function createPitch(canvas, match) {
     context.setTransform(scale, 0, 0, scale, offsetX, offsetY);
     drawField(context, length, width);
 
-    const { frame, ghostPosition, outgoingId, incomingId } = scene;
+    const { frame, ghostPosition, ghostId, highlightedId, modeledGhost, coverPoint } = scene;
     if (!frame) return;
+
+    if (coverPoint) drawCoverPoint(context, coverPoint);
 
     for (const [id, position] of Object.entries(frame.players)) {
       const player = players.get(id);
-      drawPlayer(context, position, TEAM_COLORS[player?.team] ?? "#d8e0ea", id === incomingId);
+      drawPlayer(context, position, TEAM_COLORS[player?.team] ?? "#d8e0ea", id === highlightedId);
     }
 
     if (ghostPosition) {
-      const player = players.get(outgoingId);
-      drawGhost(context, ghostPosition, TEAM_COLORS[player?.team] ?? "#d8e0ea");
+      const player = players.get(ghostId);
+      drawGhost(context, ghostPosition, modeledGhost ? "#d8ff9b" : (TEAM_COLORS[player?.team] ?? "#d8e0ea"));
     }
 
     circle(context, frame.ball.x, frame.ball.y, 0.57);
@@ -107,6 +109,17 @@ function drawSpot(context, x, y) {
   circle(context, x, y, 0.23);
   context.fillStyle = LINE_COLOR;
   context.fill();
+}
+
+function drawCoverPoint(context, { x, y }) {
+  context.beginPath();
+  context.moveTo(x - 1, y);
+  context.lineTo(x + 1, y);
+  context.moveTo(x, y - 1);
+  context.lineTo(x, y + 1);
+  context.lineWidth = 0.25;
+  context.strokeStyle = "#f1f6ee";
+  context.stroke();
 }
 
 function drawPlayer(context, { x, y }, color, replacement) {

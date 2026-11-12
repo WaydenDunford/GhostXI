@@ -11,6 +11,7 @@ export function mountDashboard(root, {
   match, onMomentChange, onCandidateChange, onCompare, onSeek, onPlayPause, onReset,
 }) {
   const doc = root.ownerDocument;
+  const tracked = match.dataKind === "tracking";
   const prefix = `ghostxi-${++dashboardCount}`;
   const events = new doc.defaultView.AbortController();
   const { signal } = events;
@@ -19,7 +20,7 @@ export function mountDashboard(root, {
   shell.innerHTML = `
     <header class="gx-header">
       <h1 class="gx-brand"><span class="gx-mark" aria-hidden="true"></span>Ghost<span>XI</span></h1>
-      <p class="gx-notice">SYNTHETIC DATA — HEURISTIC SCENARIO, NOT A PREDICTION</p>
+      <p class="gx-notice">${tracked ? "TRACKED MATCH · MODELED REPLACEMENT · NOT A PREDICTION" : "SYNTHETIC DATA — HEURISTIC SCENARIO, NOT A PREDICTION"}</p>
     </header>
     <div class="gx-controls">
       <div class="gx-moment"></div>
@@ -49,17 +50,21 @@ export function mountDashboard(root, {
           <li><span class="gx-dot gx-home" aria-hidden="true"></span>Home</li>
           <li><span class="gx-dot gx-away" aria-hidden="true"></span>Away</li>
           <li><span class="gx-dot gx-ball" aria-hidden="true"></span>Ball</li>
-          <li><span class="gx-dot gx-replacement" aria-hidden="true"></span>Replacement</li>
-          <li><span class="gx-dot gx-ghost" aria-hidden="true"></span>Original player (ghost)</li>
+          <li><span class="gx-dot gx-replacement" aria-hidden="true"></span>${tracked ? "Recorded player under review" : "Replacement"}</li>
+          <li><span class="gx-dot gx-ghost${tracked ? " gx-ghost-modeled" : ""}" aria-hidden="true"></span>${tracked ? "Modeled replacement (ghost)" : "Original player (ghost)"}</li>
+          ${tracked ? '<li><span class="gx-cover-icon" aria-hidden="true">+</span>Assigned cover point</li>' : ""}
         </ul>
         <p class="gx-status" role="status" hidden></p>
+        <p class="gx-source" hidden>Tracking and events by <a target="_blank" rel="noopener"></a></p>
       </section>
-      <section class="gx-panel gx-analysis" aria-labelledby="${prefix}-analysis">
-        <header class="gx-panel-header">
-          <h2 id="${prefix}-analysis">Coaching &amp; scouting</h2>
-        </header>
-        <div class="gx-results"></div>
-      </section>
+      <div class="gx-insights">
+        <section class="gx-panel gx-analysis" aria-labelledby="${prefix}-analysis">
+          <header class="gx-panel-header">
+            <h2 id="${prefix}-analysis">Coaching &amp; scouting</h2>
+          </header>
+          <div class="gx-results"></div>
+        </section>
+      </div>
     </div>`;
   root.append(shell);
 
@@ -85,6 +90,17 @@ export function mountDashboard(root, {
   let currentMoment;
   let currentAnalysis;
 
+  if (match.momentum?.length) {
+    find(".gx-insights").prepend(createMomentumChart(doc, match.momentum, match.moments[0], `${prefix}-momentum`));
+  }
+  if (match.source) {
+    const source = find(".gx-source");
+    const link = source.querySelector("a");
+    link.href = match.source.url;
+    link.textContent = match.source.name;
+    source.hidden = false;
+  }
+
   compare.addEventListener("click", () => onCompare(), { signal });
   play.addEventListener("click", () => onPlayPause(), { signal });
   reset.addEventListener("click", () => onReset(), { signal });
@@ -93,7 +109,7 @@ export function mountDashboard(root, {
 
   function update(viewModel) {
     const { momentId, candidateId, progress, playing, baselineFrame, alternativeFrame,
-      analysis, compared, status: statusText } = viewModel;
+      analysis, compared, status: statusText, coverPoint } = viewModel;
     const moment = moments.get(momentId);
     const outgoingId = moment?.targetPlayerId;
     const comparisonVisible = Boolean(compared && alternativeFrame);
@@ -111,6 +127,7 @@ export function mountDashboard(root, {
     momentSelect.setValue(momentId);
     candidateSelect.setValue(candidateId);
     compare.disabled = !moment?.candidatePlayerIds.includes(candidateId) || !players.has(candidateId);
+    if (tracked) setText(compare, comparisonVisible ? "Hide comparison" : "Compare players");
     play.disabled = !moment;
     reset.disabled = !moment;
     seek.disabled = !moment;
@@ -118,17 +135,21 @@ export function mountDashboard(root, {
     seek.value = progress;
     seek.setAttribute("aria-valuetext", elapsed);
     setText(time, elapsed);
-    setText(mode, comparisonVisible ? "Alternative + ghost" : "Original");
+    setText(mode, comparisonVisible ? (tracked ? "Recorded + ghost" : "Alternative + ghost") : (tracked ? "Recorded" : "Original"));
     mode.classList.toggle("gx-mode-compared", comparisonVisible);
     setText(matchLabel, [match.name, moment?.startClock].filter(Boolean).join(" · "));
     setOptionalText(description, moment?.description);
     setOptionalText(status, statusText);
 
-    const frame = comparisonVisible ? alternativeFrame : baselineFrame;
-    const ghostPosition = comparisonVisible ? baselineFrame?.players[outgoingId] : undefined;
+    const frame = comparisonVisible && !tracked ? alternativeFrame : baselineFrame;
+    const ghostId = tracked ? candidateId : outgoingId;
+    const ghostFrame = tracked ? alternativeFrame : baselineFrame;
+    const ghostPosition = comparisonVisible ? ghostFrame?.players[ghostId] : undefined;
     const pitchLabel = frame ? `Football pitch with ${Object.keys(frame.players).length} players and the ball` : "Football pitch";
-    canvas.setAttribute("aria-label", ghostPosition ? `${pitchLabel}, plus the original player’s ghost` : pitchLabel);
-    pitch.render({ frame, ghostPosition, outgoingId, incomingId: comparisonVisible ? candidateId : undefined });
+    const ghostLabel = tracked ? "the modeled replacement ghost" : "the original player’s ghost";
+    canvas.setAttribute("aria-label", ghostPosition ? `${pitchLabel}, plus ${ghostLabel}` : pitchLabel);
+    const highlightedId = tracked ? outgoingId : (comparisonVisible ? candidateId : undefined);
+    pitch.render({ frame, ghostPosition, ghostId, highlightedId, modeledGhost: tracked, coverPoint });
 
     const visibleAnalysis = compared ? analysis ?? null : null;
     if (visibleAnalysis !== currentAnalysis) {
@@ -294,6 +315,34 @@ function setOptionalText(element, text) {
   setText(element, text ?? "");
 }
 
+function createMomentumChart(doc, momentum, moment, headingId) {
+  const section = doc.createElement("section");
+  section.className = "gx-panel gx-momentum";
+  section.setAttribute("aria-labelledby", headingId);
+  section.innerHTML = `
+    <h2 id="${headingId}">Match momentum</h2>
+    <div class="gx-momentum-key"><span>Home above</span><span>Away below</span></div>
+    <div class="gx-momentum-chart" role="img"></div>
+    <div class="gx-momentum-axis"><span>Kickoff</span><span>Last event</span></div>
+    <p class="gx-momentum-note"></p>`;
+  const chart = section.querySelector(".gx-momentum-chart");
+  const peak = momentum.reduce((largest, sample) => Math.abs(sample.value) > Math.abs(largest.value) ? sample : largest);
+  chart.setAttribute("aria-label", `Three-minute rolling Home versus Away possession-value balance. Peak favors ${peak.value >= 0 ? "Home" : "Away"} in minute ${peak.minute + 1}.`);
+  for (const { minute, value } of momentum) {
+    const column = doc.createElement("span");
+    column.className = value >= 0 ? "gx-momentum-home" : "gx-momentum-away";
+    column.style.setProperty("--gx-momentum-height", `${Math.abs(value) * 50}%`);
+    column.title = `Minute ${minute + 1} · ${value >= 0 ? "Home" : "Away"} ${Math.round(Math.abs(value) * 100)}% of match peak`;
+    chart.append(column);
+  }
+  const marker = doc.createElement("i");
+  marker.style.left = `${moment.startTime / 60 / momentum.length * 100}%`;
+  marker.title = `Replay at ${moment.startClock}`;
+  chart.append(marker);
+  section.querySelector(".gx-momentum-note").textContent = `Replay at ${moment.startClock} · Rolling 3-minute balance of recorded pass and shot location values.`;
+  return section;
+}
+
 function renderAnalysis(root, analysis) {
   const doc = root.ownerDocument;
   function add(parent, tag, text, className) {
@@ -344,8 +393,15 @@ function renderAnalysis(root, analysis) {
   const coaching = add(root, "div", null, "gx-coaching");
   add(coaching, "h3", "Recommendation");
   add(coaching, "p", recommendation.title, "gx-recommendation");
+  if (Number.isFinite(recommendation.score)) add(coaching, "p", `Home wide-cover fit · ${recommendation.score}/100`, "gx-fit");
   const reasons = add(coaching, "ul");
   for (const reason of recommendation.reasoning) add(reasons, "li", reason);
   add(coaching, "p", recommendation.caveat, "gx-caveat");
   add(root, "p", qualityLabel, "gx-quality");
+  if (analysis.assumptions?.length) {
+    const assumptions = add(root, "details", null, "gx-explanations");
+    add(assumptions, "summary", "Simulation assumptions");
+    const items = add(assumptions, "ul");
+    for (const assumption of analysis.assumptions) add(items, "li", assumption);
+  }
 }

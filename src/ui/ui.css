@@ -231,7 +231,46 @@
 .ghostxi .gx-ball { width: 6px; height: 6px; background: #fff; }
 .ghostxi .gx-replacement { border: 2px solid var(--gx-accent); }
 .ghostxi .gx-ghost { border: 1px dashed #d7e8f4; background: #78caff59; }
+.ghostxi .gx-ghost-modeled { background: #d8ff9b59; }
+.ghostxi .gx-cover-icon { color: #f1f6ee; font-weight: 700; line-height: 1; }
 .ghostxi .gx-status { margin-top: 8px; font-size: .82rem; }
+.ghostxi .gx-source { margin-top: 4px; color: var(--gx-muted); font-size: .75rem; }
+.ghostxi .gx-source a { color: var(--gx-focus); }
+
+.ghostxi .gx-insights { display: grid; gap: 15px; min-width: 0; }
+.ghostxi :is(.gx-momentum-key, .gx-momentum-axis) {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--gx-muted);
+  font-size: .75rem;
+}
+
+.ghostxi .gx-momentum-key { margin-top: 8px; }
+.ghostxi .gx-momentum-key span:first-child { color: #78caff; }
+.ghostxi .gx-momentum-key span:last-child { color: #ffad85; }
+.ghostxi .gx-momentum-chart {
+  position: relative;
+  display: flex;
+  gap: 1px;
+  height: 68px;
+  margin-block: 3px;
+  border-block: 1px solid var(--gx-border);
+  background: linear-gradient(transparent calc(50% - .5px), var(--gx-border) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px));
+}
+
+.ghostxi .gx-momentum-chart span { position: relative; flex: 1 1 0; }
+.ghostxi .gx-momentum-chart span::before {
+  position: absolute;
+  inset-inline: 0;
+  height: var(--gx-momentum-height);
+  content: "";
+}
+
+.ghostxi .gx-momentum-home::before { bottom: 50%; background: #78caff; }
+.ghostxi .gx-momentum-away::before { top: 50%; background: #ffad85; }
+.ghostxi .gx-momentum-chart i { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--gx-accent); }
+.ghostxi .gx-momentum-note { margin-top: 6px; color: var(--gx-muted); font-size: .77rem; }
 
 .ghostxi .gx-results { margin-top: 12px; }
 .ghostxi .gx-empty { padding: 14px; border: 1px dashed var(--gx-border); border-radius: 6px; }
@@ -250,6 +289,7 @@
 .ghostxi .gx-coaching { margin-top: 14px; padding: 12px; border: 1px solid var(--gx-border); border-radius: 6px; background: var(--gx-bg); }
 .ghostxi .gx-coaching h3 { color: var(--gx-muted); font-size: .8rem; }
 .ghostxi .gx-recommendation { margin-top: 2px; color: var(--gx-accent); font-size: 1.05rem; font-weight: 650; }
+.ghostxi .gx-fit { margin-top: 2px; color: var(--gx-text); font-size: .85rem; font-weight: 650; }
 .ghostxi .gx-coaching ul { margin-top: 8px; padding-inline-start: 17px; font-size: .85rem; }
 .ghostxi .gx-coaching li + li { margin-top: 4px; }
 .ghostxi :is(.gx-caveat, .gx-quality) { margin-top: 9px; color: var(--gx-muted); font-size: .78rem; }

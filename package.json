@@ -1,0 +1,13 @@
+{
+  "name": "ghostxi",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare:data": "node scripts/prepare-data.js",
+    "test": "node --test"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@pitchkit/data-providers": "0.6.0"
+  }
+}
