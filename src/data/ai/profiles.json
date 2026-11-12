@@ -14431,118 +14431,308 @@
           "shoot": 0.040562217008667564
         },
         "contexts": {
-          "defensive:free": {
+          "defensive:free:central": {
             "probabilities": {
-              "pass": 0.5222657152502744,
-              "carry": 0.4756168385469469,
-              "shoot": 0.002117446202778602
+              "pass": 0.6090254911576608,
+              "carry": 0.3897334787873935,
+              "shoot": 0.0012410300549456049
             },
             "counts": {
-              "pass": 2,
-              "carry": 5,
+              "pass": 0,
+              "carry": 0,
               "shoot": 0
             },
-            "sampleSize": 7,
-            "personalizationStrength": 0.25925925925925924,
+            "sampleSize": 0,
+            "personalizationStrength": 0,
             "cohortPrior": {
-              "pass": 0.6050587155878705,
-              "carry": 0.39208273203837835,
-              "shoot": 0.0028585523737511124
+              "pass": 0.6090254911576608,
+              "carry": 0.3897334787873935,
+              "shoot": 0.0012410300549456049
             }
           },
-          "defensive:pressure": {
+          "defensive:free:wide": {
             "probabilities": {
-              "pass": 0.2776177997695728,
-              "carry": 0.7190663167339938,
-              "shoot": 0.003315883496433353
+              "pass": 0.6283340172343045,
+              "carry": 0.3708950398527748,
+              "shoot": 0.0007709429129207544
             },
             "counts": {
               "pass": 2,
-              "carry": 9,
+              "carry": 2,
               "shoot": 0
+            },
+            "sampleSize": 4,
+            "personalizationStrength": 0.16666666666666666,
+            "cohortPrior": {
+              "pass": 0.6540008206811654,
+              "carry": 0.34507404782332973,
+              "shoot": 0.0009251314955049054
+            }
+          },
+          "defensive:pressure:central": {
+            "probabilities": {
+              "pass": 0.3150215469353397,
+              "carry": 0.6829672976396496,
+              "shoot": 0.0020111554250106635
+            },
+            "counts": {
+              "pass": 0,
+              "carry": 2,
+              "shoot": 0
+            },
+            "sampleSize": 2,
+            "personalizationStrength": 0.09090909090909091,
+            "cohortPrior": {
+              "pass": 0.3465237016288737,
+              "carry": 0.6512640274036146,
+              "shoot": 0.00221227096751173
+            }
+          },
+          "defensive:pressure:wide": {
+            "probabilities": {
+              "pass": 0.2798430866261949,
+              "carry": 0.7188161430904647,
+              "shoot": 0.0013407702833404427
+            },
+            "counts": {
+              "pass": 1,
+              "carry": 2,
+              "shoot": 0
+            },
+            "sampleSize": 3,
+            "personalizationStrength": 0.13043478260869565,
+            "cohortPrior": {
+              "pass": 0.2718195496201241,
+              "carry": 0.7266385645540344,
+              "shoot": 0.0015418858258415091
+            }
+          },
+          "low-middle:free:central": {
+            "probabilities": {
+              "pass": 0.5582105963483672,
+              "carry": 0.4413598364734752,
+              "shoot": 0.00042956717815761757
+            },
+            "counts": {
+              "pass": 1,
+              "carry": 2,
+              "shoot": 0
+            },
+            "sampleSize": 3,
+            "personalizationStrength": 0.13043478260869565,
+            "cohortPrior": {
+              "pass": 0.5919421858006223,
+              "carry": 0.4075638119444965,
+              "shoot": 0.0004940022548812602
+            }
+          },
+          "low-middle:free:wide": {
+            "probabilities": {
+              "pass": 0.5197458118610424,
+              "carry": 0.4801273314143185,
+              "shoot": 0.0001268567246391668
+            },
+            "counts": {
+              "pass": 10,
+              "carry": 12,
+              "shoot": 0
+            },
+            "sampleSize": 22,
+            "personalizationStrength": 0.5238095238095238,
+            "cohortPrior": {
+              "pass": 0.591466204908189,
+              "carry": 0.4082673959700688,
+              "shoot": 0.00026639912174225024
+            }
+          },
+          "low-middle:pressure:central": {
+            "probabilities": {
+              "pass": 0.315772295608936,
+              "carry": 0.6833601471489026,
+              "shoot": 0.0008675572421614628
+            },
+            "counts": {
+              "pass": 1,
+              "carry": 2,
+              "shoot": 0
+            },
+            "sampleSize": 3,
+            "personalizationStrength": 0.13043478260869565,
+            "cohortPrior": {
+              "pass": 0.3131381399502764,
+              "carry": 0.6858641692212379,
+              "shoot": 0.0009976908284856823
+            }
+          },
+          "low-middle:pressure:wide": {
+            "probabilities": {
+              "pass": 0.2781221491517409,
+              "carry": 0.7216276923809397,
+              "shoot": 0.0002501584673194189
+            },
+            "counts": {
+              "pass": 4,
+              "carry": 12,
+              "shoot": 0
+            },
+            "sampleSize": 16,
+            "personalizationStrength": 0.4444444444444444,
+            "cohortPrior": {
+              "pass": 0.3006198684731336,
+              "carry": 0.6989298462856915,
+              "shoot": 0.00045028524117495395
+            }
+          },
+          "high-middle:free:central": {
+            "probabilities": {
+              "pass": 0.6150563626898599,
+              "carry": 0.3732260123658117,
+              "shoot": 0.011717624944328429
+            },
+            "counts": {
+              "pass": 11,
+              "carry": 6,
+              "shoot": 0
+            },
+            "sampleSize": 17,
+            "personalizationStrength": 0.4594594594594595,
+            "cohortPrior": {
+              "pass": 0.5878542709762408,
+              "carry": 0.3904681228767517,
+              "shoot": 0.021677606147007596
+            }
+          },
+          "high-middle:free:wide": {
+            "probabilities": {
+              "pass": 0.4778346073510534,
+              "carry": 0.5221418496843415,
+              "shoot": 0.000023542964605098806
+            },
+            "counts": {
+              "pass": 33,
+              "carry": 38,
+              "shoot": 0
+            },
+            "sampleSize": 71,
+            "personalizationStrength": 0.7802197802197802,
+            "cohortPrior": {
+              "pass": 0.5241474634472928,
+              "carry": 0.475745416063754,
+              "shoot": 0.00010712048895319957
+            }
+          },
+          "high-middle:pressure:central": {
+            "probabilities": {
+              "pass": 0.34928579124102976,
+              "carry": 0.6098740108638884,
+              "shoot": 0.04084019789508183
+            },
+            "counts": {
+              "pass": 4,
+              "carry": 6,
+              "shoot": 1
             },
             "sampleSize": 11,
             "personalizationStrength": 0.3548387096774194,
             "cohortPrior": {
-              "pass": 0.33030758964283785,
-              "carry": 0.6645527909376904,
-              "shoot": 0.005139619419471697
+              "pass": 0.3413929764235961,
+              "carry": 0.645304716839027,
+              "shoot": 0.013302306737376833
             }
           },
-          "middle:free": {
+          "high-middle:pressure:wide": {
             "probabilities": {
-              "pass": 0.5503693683599461,
-              "carry": 0.44943894149443614,
-              "shoot": 0.0001916901456177283
+              "pass": 0.2250515120063021,
+              "carry": 0.774843835109591,
+              "shoot": 0.00010465288410688976
             },
             "counts": {
-              "pass": 32,
-              "carry": 27,
+              "pass": 7,
+              "carry": 25,
               "shoot": 0
             },
-            "sampleSize": 59,
-            "personalizationStrength": 0.7468354430379747,
+            "sampleSize": 32,
+            "personalizationStrength": 0.6153846153846154,
             "cohortPrior": {
-              "pass": 0.5739590050217872,
-              "carry": 0.4252838189030228,
-              "shoot": 0.0007571760751900268
+              "pass": 0.23513393121638554,
+              "carry": 0.7645939712849366,
+              "shoot": 0.00027209749867791337
             }
           },
-          "middle:pressure": {
+          "attacking:free:central": {
             "probabilities": {
-              "pass": 0.2845952209747436,
-              "carry": 0.7148351167743298,
-              "shoot": 0.0005696622509266659
+              "pass": 0.5311928952610293,
+              "carry": 0.20961720858873795,
+              "shoot": 0.2591898961502328
             },
             "counts": {
-              "pass": 10,
-              "carry": 26,
-              "shoot": 0
-            },
-            "sampleSize": 36,
-            "personalizationStrength": 0.6428571428571429,
-            "cohortPrior": {
-              "pass": 0.296866618729282,
-              "carry": 0.7015383269681233,
-              "shoot": 0.0015950543025946646
-            }
-          },
-          "attacking:free": {
-            "probabilities": {
-              "pass": 0.5399013979321658,
-              "carry": 0.41490768609741546,
-              "shoot": 0.04519091597041864
-            },
-            "counts": {
-              "pass": 107,
-              "carry": 83,
+              "pass": 20,
+              "carry": 6,
               "shoot": 9
             },
-            "sampleSize": 199,
-            "personalizationStrength": 0.908675799086758,
+            "sampleSize": 35,
+            "personalizationStrength": 0.6363636363636364,
             "cohortPrior": {
-              "pass": 0.5619203073572162,
-              "carry": 0.39323916276669973,
-              "shoot": 0.04484052987608407
+              "pass": 0.46078046196783046,
+              "carry": 0.27644732361902935,
+              "shoot": 0.2627722144131402
             }
           },
-          "attacking:pressure": {
+          "attacking:free:wide": {
             "probabilities": {
-              "pass": 0.21127402763914105,
-              "carry": 0.7028905177843858,
-              "shoot": 0.08583545457647318
+              "pass": 0.5743397460069973,
+              "carry": 0.4256453967823296,
+              "shoot": 0.000014857210673120608
             },
             "counts": {
-              "pass": 15,
-              "carry": 53,
-              "shoot": 7
+              "pass": 64,
+              "carry": 49,
+              "shoot": 0
             },
-            "sampleSize": 75,
-            "personalizationStrength": 0.7894736842105263,
+            "sampleSize": 113,
+            "personalizationStrength": 0.849624060150376,
             "cohortPrior": {
-              "pass": 0.25355163128591995,
-              "carry": 0.6887299594758324,
-              "shoot": 0.05771840923824763
+              "pass": 0.6193593109465322,
+              "carry": 0.3805418886024915,
+              "shoot": 0.00009880045097625203
+            }
+          },
+          "attacking:pressure:central": {
+            "probabilities": {
+              "pass": 0.15224623068162615,
+              "carry": 0.6202089445469686,
+              "shoot": 0.2275448247714052
+            },
+            "counts": {
+              "pass": 2,
+              "carry": 16,
+              "shoot": 6
+            },
+            "sampleSize": 24,
+            "personalizationStrength": 0.5454545454545454,
+            "cohortPrior": {
+              "pass": 0.23494170749957757,
+              "carry": 0.564459678003331,
+              "shoot": 0.20059861449709143
+            }
+          },
+          "attacking:pressure:wide": {
+            "probabilities": {
+              "pass": 0.2513420807605732,
+              "carry": 0.7457351484641445,
+              "shoot": 0.0029227707752823525
+            },
+            "counts": {
+              "pass": 8,
+              "carry": 23,
+              "shoot": 0
+            },
+            "sampleSize": 31,
+            "personalizationStrength": 0.6078431372549019,
+            "cohortPrior": {
+              "pass": 0.24092230593946168,
+              "carry": 0.7516246285835684,
+              "shoot": 0.007453065476969998
             }
           }
         },
@@ -14597,8 +14787,8 @@
         "matchId": 3943043,
         "date": "2024-07-14",
         "events": 73,
-        "eventTypeLogLoss": 0.7486472385949794,
-        "cohortEventTypeLogLoss": 0.7439180376919332,
+        "eventTypeLogLoss": 0.7169434257106168,
+        "cohortEventTypeLogLoss": 0.7105729488196938,
         "interpretation": "Held-out event-type frequency loss, lower is better. This does not validate movement or counterfactual outcomes."
       },
       "assumptions": [
@@ -14666,11 +14856,163 @@
           "shoot": 0.016363119851014803
         },
         "contexts": {
-          "defensive:free": {
+          "defensive:free:central": {
             "probabilities": {
-              "pass": 0.6386630525399412,
-              "carry": 0.36003760547199015,
-              "shoot": 0.0012993419880686875
+              "pass": 0.6135896365411863,
+              "carry": 0.38552391341956677,
+              "shoot": 0.0008864500392468606
+            },
+            "counts": {
+              "pass": 5,
+              "carry": 3,
+              "shoot": 0
+            },
+            "sampleSize": 8,
+            "personalizationStrength": 0.2857142857142857,
+            "cohortPrior": {
+              "pass": 0.6090254911576608,
+              "carry": 0.3897334787873935,
+              "shoot": 0.0012410300549456049
+            }
+          },
+          "defensive:free:wide": {
+            "probabilities": {
+              "pass": 0.6953852466778195,
+              "carry": 0.30390311371025364,
+              "shoot": 0.0007116396119268503
+            },
+            "counts": {
+              "pass": 5,
+              "carry": 1,
+              "shoot": 0
+            },
+            "sampleSize": 6,
+            "personalizationStrength": 0.23076923076923078,
+            "cohortPrior": {
+              "pass": 0.6540008206811654,
+              "carry": 0.34507404782332973,
+              "shoot": 0.0009251314955049054
+            }
+          },
+          "defensive:pressure:central": {
+            "probabilities": {
+              "pass": 0.3465237016288737,
+              "carry": 0.6512640274036146,
+              "shoot": 0.00221227096751173
+            },
+            "counts": {
+              "pass": 0,
+              "carry": 0,
+              "shoot": 0
+            },
+            "sampleSize": 0,
+            "personalizationStrength": 0,
+            "cohortPrior": {
+              "pass": 0.3465237016288737,
+              "carry": 0.6512640274036146,
+              "shoot": 0.00221227096751173
+            }
+          },
+          "defensive:pressure:wide": {
+            "probabilities": {
+              "pass": 0.2974556396960993,
+              "carry": 0.7013108516432276,
+              "shoot": 0.0012335086606732075
+            },
+            "counts": {
+              "pass": 2,
+              "carry": 3,
+              "shoot": 0
+            },
+            "sampleSize": 5,
+            "personalizationStrength": 0.2,
+            "cohortPrior": {
+              "pass": 0.2718195496201241,
+              "carry": 0.7266385645540344,
+              "shoot": 0.0015418858258415091
+            }
+          },
+          "low-middle:free:central": {
+            "probabilities": {
+              "pass": 0.6077046360004016,
+              "carry": 0.39197665286741706,
+              "shoot": 0.00031871113218145817
+            },
+            "counts": {
+              "pass": 7,
+              "carry": 4,
+              "shoot": 0
+            },
+            "sampleSize": 11,
+            "personalizationStrength": 0.3548387096774194,
+            "cohortPrior": {
+              "pass": 0.5919421858006223,
+              "carry": 0.4075638119444965,
+              "shoot": 0.0004940022548812602
+            }
+          },
+          "low-middle:free:wide": {
+            "probabilities": {
+              "pass": 0.6365864819632756,
+              "carry": 0.3633069583880275,
+              "shoot": 0.00010655964869690009
+            },
+            "counts": {
+              "pass": 20,
+              "carry": 10,
+              "shoot": 0
+            },
+            "sampleSize": 30,
+            "personalizationStrength": 0.6,
+            "cohortPrior": {
+              "pass": 0.591466204908189,
+              "carry": 0.4082673959700688,
+              "shoot": 0.00026639912174225024
+            }
+          },
+          "low-middle:pressure:central": {
+            "probabilities": {
+              "pass": 0.3308129571073403,
+              "carry": 0.6684744065865986,
+              "shoot": 0.0007126363060612016
+            },
+            "counts": {
+              "pass": 3,
+              "carry": 5,
+              "shoot": 0
+            },
+            "sampleSize": 8,
+            "personalizationStrength": 0.2857142857142857,
+            "cohortPrior": {
+              "pass": 0.3131381399502764,
+              "carry": 0.6858641692212379,
+              "shoot": 0.0009976908284856823
+            }
+          },
+          "low-middle:pressure:wide": {
+            "probabilities": {
+              "pass": 0.3113866082102816,
+              "carry": 0.6884132650158629,
+              "shoot": 0.0002001267738555351
+            },
+            "counts": {
+              "pass": 8,
+              "carry": 17,
+              "shoot": 0
+            },
+            "sampleSize": 25,
+            "personalizationStrength": 0.5555555555555556,
+            "cohortPrior": {
+              "pass": 0.3006198684731336,
+              "carry": 0.6989298462856915,
+              "shoot": 0.00045028524117495395
+            }
+          },
+          "high-middle:free:central": {
+            "probabilities": {
+              "pass": 0.6308428504437458,
+              "carry": 0.35930369221670533,
+              "shoot": 0.009853457339548906
             },
             "counts": {
               "pass": 16,
@@ -14680,104 +15022,142 @@
             "sampleSize": 24,
             "personalizationStrength": 0.5454545454545454,
             "cohortPrior": {
-              "pass": 0.6050587155878705,
-              "carry": 0.39208273203837835,
-              "shoot": 0.0028585523737511124
+              "pass": 0.5878542709762408,
+              "carry": 0.3904681228767517,
+              "shoot": 0.021677606147007596
             }
           },
-          "defensive:pressure": {
+          "high-middle:free:wide": {
             "probabilities": {
-              "pass": 0.30987586428570185,
-              "carry": 0.6868082522178648,
-              "shoot": 0.003315883496433353
+              "pass": 0.5558635941515668,
+              "carry": 0.4441192665702006,
+              "shoot": 0.00001713927823251193
+            },
+            "counts": {
+              "pass": 59,
+              "carry": 46,
+              "shoot": 0
+            },
+            "sampleSize": 105,
+            "personalizationStrength": 0.84,
+            "cohortPrior": {
+              "pass": 0.5241474634472928,
+              "carry": 0.475745416063754,
+              "shoot": 0.00010712048895319957
+            }
+          },
+          "high-middle:pressure:central": {
+            "probabilities": {
+              "pass": 0.3867092688739972,
+              "carry": 0.6037890834564479,
+              "shoot": 0.009501647669554882
+            },
+            "counts": {
+              "pass": 4,
+              "carry": 4,
+              "shoot": 0
+            },
+            "sampleSize": 8,
+            "personalizationStrength": 0.2857142857142857,
+            "cohortPrior": {
+              "pass": 0.3413929764235961,
+              "carry": 0.645304716839027,
+              "shoot": 0.013302306737376833
+            }
+          },
+          "high-middle:pressure:wide": {
+            "probabilities": {
+              "pass": 0.2763728884336313,
+              "carry": 0.7235685959752552,
+              "shoot": 0.00005851559111352976
+            },
+            "counts": {
+              "pass": 21,
+              "carry": 52,
+              "shoot": 0
+            },
+            "sampleSize": 73,
+            "personalizationStrength": 0.7849462365591398,
+            "cohortPrior": {
+              "pass": 0.23513393121638554,
+              "carry": 0.7645939712849366,
+              "shoot": 0.00027209749867791337
+            }
+          },
+          "attacking:free:central": {
+            "probabilities": {
+              "pass": 0.5443121847871322,
+              "carry": 0.23057892944761174,
+              "shoot": 0.2251088857652561
+            },
+            "counts": {
+              "pass": 18,
+              "carry": 6,
+              "shoot": 6
+            },
+            "sampleSize": 30,
+            "personalizationStrength": 0.6,
+            "cohortPrior": {
+              "pass": 0.46078046196783046,
+              "carry": 0.27644732361902935,
+              "shoot": 0.2627722144131402
+            }
+          },
+          "attacking:free:wide": {
+            "probabilities": {
+              "pass": 0.5966437903978101,
+              "carry": 0.40334014448821004,
+              "shoot": 0.00001606511397987838
+            },
+            "counts": {
+              "pass": 61,
+              "carry": 42,
+              "shoot": 0
+            },
+            "sampleSize": 103,
+            "personalizationStrength": 0.8373983739837398,
+            "cohortPrior": {
+              "pass": 0.6193593109465322,
+              "carry": 0.3805418886024915,
+              "shoot": 0.00009880045097625203
+            }
+          },
+          "attacking:pressure:central": {
+            "probabilities": {
+              "pass": 0.23329800454519853,
+              "carry": 0.5845210169717158,
+              "shoot": 0.18218097848308573
             },
             "counts": {
               "pass": 3,
               "carry": 8,
-              "shoot": 0
-            },
-            "sampleSize": 11,
-            "personalizationStrength": 0.3548387096774194,
-            "cohortPrior": {
-              "pass": 0.33030758964283785,
-              "carry": 0.6645527909376904,
-              "shoot": 0.005139619419471697
-            }
-          },
-          "middle:free": {
-            "probabilities": {
-              "pass": 0.5869634856093616,
-              "carry": 0.41292179074288227,
-              "shoot": 0.00011472364775606467
-            },
-            "counts": {
-              "pass": 66,
-              "carry": 46,
-              "shoot": 0
-            },
-            "sampleSize": 112,
-            "personalizationStrength": 0.8484848484848485,
-            "cohortPrior": {
-              "pass": 0.5739590050217872,
-              "carry": 0.4252838189030228,
-              "shoot": 0.0007571760751900268
-            }
-          },
-          "middle:pressure": {
-            "probabilities": {
-              "pass": 0.3193733237458564,
-              "carry": 0.6803076653936247,
-              "shoot": 0.0003190108605189329
-            },
-            "counts": {
-              "pass": 26,
-              "carry": 54,
-              "shoot": 0
-            },
-            "sampleSize": 80,
-            "personalizationStrength": 0.8,
-            "cohortPrior": {
-              "pass": 0.296866618729282,
-              "carry": 0.7015383269681233,
-              "shoot": 0.0015950543025946646
-            }
-          },
-          "attacking:free": {
-            "probabilities": {
-              "pass": 0.5982010256076833,
-              "carry": 0.36748648385738303,
-              "shoot": 0.03431249053493374
-            },
-            "counts": {
-              "pass": 109,
-              "carry": 66,
-              "shoot": 6
-            },
-            "sampleSize": 181,
-            "personalizationStrength": 0.900497512437811,
-            "cohortPrior": {
-              "pass": 0.5619203073572162,
-              "carry": 0.39323916276669973,
-              "shoot": 0.04484052987608407
-            }
-          },
-          "attacking:pressure": {
-            "probabilities": {
-              "pass": 0.25956279130105714,
-              "carry": 0.7122732070492558,
-              "shoot": 0.028164001649687076
-            },
-            "counts": {
-              "pass": 24,
-              "carry": 66,
               "shoot": 2
             },
-            "sampleSize": 92,
-            "personalizationStrength": 0.8214285714285714,
+            "sampleSize": 13,
+            "personalizationStrength": 0.3939393939393939,
             "cohortPrior": {
-              "pass": 0.25355163128591995,
-              "carry": 0.6887299594758324,
-              "shoot": 0.05771840923824763
+              "pass": 0.23494170749957757,
+              "carry": 0.564459678003331,
+              "shoot": 0.20059861449709143
+            }
+          },
+          "attacking:pressure:wide": {
+            "probabilities": {
+              "pass": 0.23687952279984834,
+              "carry": 0.7610210221362165,
+              "shoot": 0.002099455063935211
+            },
+            "counts": {
+              "pass": 12,
+              "carry": 39,
+              "shoot": 0
+            },
+            "sampleSize": 51,
+            "personalizationStrength": 0.7183098591549296,
+            "cohortPrior": {
+              "pass": 0.24092230593946168,
+              "carry": 0.7516246285835684,
+              "shoot": 0.007453065476969998
             }
           }
         },
@@ -14832,8 +15212,8 @@
         "matchId": 3943043,
         "date": "2024-07-14",
         "events": 52,
-        "eventTypeLogLoss": 0.6857246098694214,
-        "cohortEventTypeLogLoss": 0.6942493819194736,
+        "eventTypeLogLoss": 0.6747009617571842,
+        "cohortEventTypeLogLoss": 0.6696985322171097,
         "interpretation": "Held-out event-type frequency loss, lower is better. This does not validate movement or counterfactual outcomes."
       },
       "assumptions": [
@@ -14846,14 +15226,16 @@
   ],
   "methodology": {
     "smoothingStrength": 20,
+    "cellSmoothingStrength": 2,
     "scalarSmoothingStrength": 8,
-    "contexts": "Three longitudinal pitch zones × pressure/free, conditioned on recorded under_pressure flags.",
+    "contexts": "Four longitudinal pitch zones (26, 52.5, 79 m) × pressure/free × wide/central (17 m from a touchline), conditioned on recorded under_pressure flags.",
+    "tuning": "Zones, width split and cell smoothing chosen by leave-one-match-out cross-validation over all wingers in the 12 pre-final matches (event-type log loss 0.742 → 0.703); the final stayed held out.",
     "probabilities": "(player action count + 20 × winger-cohort action share) / (player context events + 20)",
     "direction": "StatsBomb actor-relative locations, scaled to 105×68 metres. No global tracking reconstruction.",
     "model": "Empirical behavior profile plus heuristic utility-based game agents; no neural-network training."
   },
-  "fittingMilliseconds": 334.737,
-  "downloadAndPreparationSeconds": 27.103,
+  "fittingMilliseconds": 242.003,
+  "downloadAndPreparationSeconds": 49.295,
   "sourceFiles": [
     {
       "url": "https://raw.githubusercontent.com/hudl/open-data/4b73468fc5b0f1950f9f66fada70ad3a4f9327cb/data/events/3930160.json",

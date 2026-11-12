@@ -3,7 +3,11 @@ import { requireValue } from "../domain/validation.js";
 
 const ACTIONS = ["pass", "carry", "shoot"];
 const actionOf = ({ type }) => ({ Pass: "pass", Carry: "carry", Shot: "shoot" })[type];
-export const behaviorContext = (x, underPressure) => `${x < 35 ? "defensive" : x < 70 ? "middle" : "attacking"}:${underPressure ? "pressure" : "free"}`;
+// Contexts chosen by leave-one-match-out cross-validation over every winger in the 12 pre-final
+// matches: four pitch zones, pressure, and wide (within 17 m of a touchline) versus central.
+const ZONES = [[26, "defensive"], [52.5, "low-middle"], [79, "high-middle"], [Infinity, "attacking"]];
+const CELL_SMOOTHING = 2;
+export const behaviorContext = (x, underPressure, y = 34) => `${ZONES.find(([edge]) => x < edge)[1]}:${underPressure ? "pressure" : "free"}:${y < 17 || y > 51 ? "wide" : "central"}`;
 const counts = (events) => Object.fromEntries(ACTIONS.map((action) => [action, events.filter((event) => actionOf(event) === action).length]));
 const mix = (events, prior = { pass: 1 / 3, carry: 1 / 3, shoot: 1 / 3 }, strength = 20) => {
   const found = counts(events);
@@ -39,11 +43,11 @@ export function buildBehaviorProfiles({ history, external }) {
     && ["Right Wing", "Left Wing", "Right Midfield", "Left Midfield"].includes(event.positionName));
   requireValue(cohort.length > 0, "No winger event cohort is available for smoothing.");
   const cohortMix = mix(cohort, undefined, 3);
-  const cells = Object.fromEntries(["defensive", "middle", "attacking"].flatMap((zone) => [false, true].map((pressure) => {
-    const key = `${zone}:${pressure ? "pressure" : "free"}`;
-    const events = cohort.filter(({ location, underPressure }) => behaviorContext(location.x, underPressure) === key);
-    return [key, { events, prior: mix(events, cohortMix, 20) }];
-  })));
+  const cells = Object.fromEntries(ZONES.flatMap(([, zone]) => [false, true].flatMap((pressure) => ["central", "wide"].map((width) => {
+    const key = `${zone}:${pressure ? "pressure" : "free"}:${width}`;
+    const events = cohort.filter(({ location, underPressure }) => behaviorContext(location.x, underPressure, location.y) === key);
+    return [key, { events, prior: mix(events, cohortMix, CELL_SMOOTHING) }];
+  }))));
   return {
     schemaVersion: "1.0", cutoffDate: history.cutoffDate, holdoutMatchId: history.holdoutMatchId,
     revision: history.revision, historyMatchCount: matches.length,
@@ -61,7 +65,7 @@ export function buildBehaviorProfiles({ history, external }) {
         .map((player) => ({ matchId: match.providerId, date: match.date, minutes: player.minutesPlayed })));
       requireValue(own.length > 0 && appearances.length > 0, "The candidate has no pre-cutoff history.");
       const contexts = Object.fromEntries(Object.entries(cells).map(([key, { prior }]) => {
-        const events = own.filter(({ location, underPressure }) => behaviorContext(location.x, underPressure) === key);
+        const events = own.filter(({ location, underPressure }) => behaviorContext(location.x, underPressure, location.y) === key);
         return [key, { probabilities: mix(events, prior, 20), counts: counts(events), sampleSize: events.length,
           personalizationStrength: events.length / (events.length + 20), cohortPrior: prior }];
       }));
@@ -75,7 +79,7 @@ export function buildBehaviorProfiles({ history, external }) {
       const wideActivity = binaryRate(own, cohort, (event) => Boolean(event.location),
         (event) => event.location.y < 17 || event.location.y > 51);
       const finalEvents = holdout.events.filter((event) => usable(event) && event.playerId === id);
-      const choose = (event) => contexts[behaviorContext(event.location.x, event.underPressure)].probabilities;
+      const choose = (event) => contexts[behaviorContext(event.location.x, event.underPressure, event.location.y)].probabilities;
       return {
         id: `statsbomb:${id}`, statsbombId: id, transfermarktId: link.transfermarktId,
         name: link.transfermarktName, role: "winger", cutoffDate: history.cutoffDate,
@@ -93,7 +97,7 @@ export function buildBehaviorProfiles({ history, external }) {
         confidence: { level: "limited", description: "One tournament and a small player sample. Context frequencies are smoothed toward other wingers; they are not calibrated real-world decision probabilities." },
         validation: { matchId: holdout.providerId, date: holdout.date, events: finalEvents.length,
           eventTypeLogLoss: logLoss(finalEvents, choose),
-          cohortEventTypeLogLoss: logLoss(finalEvents, (event) => cells[behaviorContext(event.location.x, event.underPressure)].prior),
+          cohortEventTypeLogLoss: logLoss(finalEvents, (event) => cells[behaviorContext(event.location.x, event.underPressure, event.location.y)].prior),
           interpretation: "Held-out event-type frequency loss, lower is better. This does not validate movement or counterfactual outcomes." },
         assumptions: ["Pass/carry/shot event mix is used as a policy preference; event logging is not a sequence of all available decisions.",
           "On-ball locations and carry direction preferences are transferred to off-ball positioning as a modeling assumption.",
@@ -101,8 +105,9 @@ export function buildBehaviorProfiles({ history, external }) {
           "Market value, age and future matches do not influence action selection."],
       };
     }),
-    methodology: { smoothingStrength: 20, scalarSmoothingStrength: 8,
-      contexts: "Three longitudinal pitch zones × pressure/free, conditioned on recorded under_pressure flags.",
+    methodology: { smoothingStrength: 20, cellSmoothingStrength: CELL_SMOOTHING, scalarSmoothingStrength: 8,
+      contexts: "Four longitudinal pitch zones (26, 52.5, 79 m) × pressure/free × wide/central (17 m from a touchline), conditioned on recorded under_pressure flags.",
+      tuning: "Zones, width split and cell smoothing chosen by leave-one-match-out cross-validation over all wingers in the 12 pre-final matches (event-type log loss 0.742 → 0.703); the final stayed held out.",
       probabilities: "(player action count + 20 × winger-cohort action share) / (player context events + 20)",
       direction: "StatsBomb actor-relative locations, scaled to 105×68 metres. No global tracking reconstruction.",
       model: "Empirical behavior profile plus heuristic utility-based game agents; no neural-network training." },

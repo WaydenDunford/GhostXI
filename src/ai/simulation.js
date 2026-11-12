@@ -111,7 +111,7 @@ export function simulateBehavior({ match, momentId, profile, seed = 42 }) {
   function onBall(id, time) {
     const candidate = id === incoming;
     const pressure = nearestOpponent(id) < 5;
-    const context = behaviorContext(home(id) ? position[id].x : 105 - position[id].x, pressure);
+    const context = behaviorContext(home(id) ? position[id].x : 105 - position[id].x, pressure, position[id].y);
     const prior = candidate ? profile.habits.contexts[context].probabilities : { pass: 0.65, carry: 0.30, shoot: 0.05 };
     const pass = passOption(id);
     const goalDistance = dist(position[id], { x: home(id) ? 105 : 0, y: 34 });
