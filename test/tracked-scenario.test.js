@@ -63,6 +63,9 @@ for (const moment of match.moments) {
     assert.notDeepEqual(analyses[0].metrics.map(({ alternative }) => alternative), analyses[1].metrics.map(({ alternative }) => alternative));
     if (moment.id === "home-wide-interception") {
       assert.deepEqual(analyses.map(({ recommendation }) => recommendation.score), [86, 64, 91, 92]);
+      // Real, named players judged on one modeled clip: the label describes the modeled fit, not a verdict.
+      assert.deepEqual(analyses.map(({ recommendation }) => recommendation.title),
+        ["Strong modeled fit", "Partial modeled fit", "Strong modeled fit", "Strong modeled fit"]);
       assert.deepEqual(analyses[0].metrics.map(({ baseline, alternative }) => [baseline.toFixed(2), alternative.toFixed(2)]),
         [["3.47", "1.23"], ["2.82", "0.89"], ["0.00", "3.13"], ["0.70", "1.85"]]);
     }

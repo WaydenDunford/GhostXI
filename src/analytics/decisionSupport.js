@@ -103,8 +103,8 @@ export function analyzeScenario({ match, momentId, simulation, possessionValue }
     value: 20 * candidate.accessRatio,
   };
   const score = Math.round(fit.cover + fit.access + fit.value);
-  const title = score >= 85 ? "Must-have candidate" : score >= 70 ? "Strong prospect"
-    : score >= 50 ? "Possible fit" : "Low fit";
+  const title = score >= 85 ? "Strong modeled fit" : score >= 70 ? "Good modeled fit"
+    : score >= 50 ? "Partial modeled fit" : "Weak modeled fit";
 
   const comparison = candidate.closest <= original.closest
     ? `The modeled run closed to the ball at least as closely as ${recordedPlayer}. Review whether it can still ${task}.`
