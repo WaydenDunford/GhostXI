@@ -42,7 +42,7 @@ async function comparisonBody(request, allowSeed = false) {
   return body;
 }
 
-export function createApiServer({ service, allowedOrigins = [] }) {
+export function createApiServer({ service, allowedOrigins = [], uploads = null }) {
   const origins = new Set(allowedOrigins);
   const server = createServer(async (request, response) => {
     response.setHeader("Vary", "Origin");
@@ -60,6 +60,7 @@ export function createApiServer({ service, allowedOrigins = [] }) {
         response.writeHead(200, { "Content-Type": `${mime}; charset=utf-8`, "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" });
         response.end(await readFile(new URL(`../${path}`, import.meta.url))); return;
       }
+      if (uploads && await uploads({ request, response, params, send })) return;
       if (await handleSubstitutionRequest({ request, response, url, params, service })) return;
       const isComparison = pathname === `${PREFIX}/comparisons`;
       const isAISimulation = pathname === `${PREFIX}/ai/simulations`;

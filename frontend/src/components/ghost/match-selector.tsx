@@ -1,4 +1,5 @@
 import { useBackend } from "@/lib/backend-context";
+import { UploadMatch } from "./upload-match";
 import {
   Select,
   SelectContent,
@@ -111,6 +112,7 @@ export function MatchSelector() {
               </SelectContent>
             </Select>
           </div>
+          <UploadMatch />
         </>
       )}
       {b.sourceMode === "events" && b.eventMatch.data && (

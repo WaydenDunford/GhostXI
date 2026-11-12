@@ -8,6 +8,7 @@ import { createVerifiedReplayService } from "./verified-replay.js";
 import { createScenarioStore } from "./scenario-store.js";
 import { fileURLToPath } from "node:url";
 import { normalizeSkillCorner } from "../src/data/skillcorner.js";
+import { normalizeClubUpload } from "../src/data/skillcorner-package.js";
 
 const copy = (value) => structuredClone(value);
 const freeze = (value) => {
@@ -146,6 +147,18 @@ export async function loadFootballService({ scenarioFile = process.env.GHOSTXI_S
       if (value.id !== `skillcorner:${file.slice(0, -5)}`) throw new Error("SkillCorner filename/source identity mismatch.");
       skillcorner.push(value);
     } catch (error) { trackingErrors.push({ file, reason: error.message }); }
+  }
+  // Club-uploaded SkillCorner packages (see server/club-uploads.js); never committed.
+  const uploadDirectory = new URL("../data/uploads/replays/", import.meta.url);
+  let uploadFiles = [];
+  try { uploadFiles = await readdir(uploadDirectory); } catch (error) { if (error.code !== "ENOENT") throw error; }
+  for (const file of uploadFiles.filter((file) => /^\d+\.json$/.test(file))) {
+    try {
+      const value = normalizeClubUpload(JSON.parse(await readFile(new URL(file, uploadDirectory), "utf8")));
+      if (value.id !== `skillcorner:${file.slice(0, -5)}`) throw new Error("Uploaded package filename/identity mismatch.");
+      if (skillcorner.some((m) => m.id === value.id)) throw new Error("This match is already loaded from SkillCorner Open Data.");
+      skillcorner.push(value);
+    } catch (error) { trackingErrors.push({ file: `uploads/${file}`, reason: error.message }); }
   }
   return createFootballService({ recording, grid, external, behavior, pff, pffErrors, skillcorner, trackingErrors, scenarioStore: createScenarioStore({ filePath: scenarioFile }) });
 }
